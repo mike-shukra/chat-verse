@@ -1,4 +1,7 @@
 package com.example.chatverse.data.remote.dto
 
-class AuthResponse {
-}
+data class AuthResponse(
+    val id: String,
+    val username: String,
+    val email: String
+)

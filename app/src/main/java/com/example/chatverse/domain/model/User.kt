@@ -1,4 +1,7 @@
 package com.example.chatverse.domain.model
 
-class User {
-}
+data class User(
+    val id: String,
+    val username: String,
+    val email: String
+)
