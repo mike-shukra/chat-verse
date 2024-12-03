@@ -7,69 +7,97 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 
 @Composable
-fun LoginScreen(viewModel: LoginViewModel = viewModel()) {
-    var phoneNumber by remember { mutableStateOf("") }
-    var authCode by remember { mutableStateOf("") }
-    var isCodeSent by remember { mutableStateOf(false) }
+fun LoginScreen(
+    viewModel: LoginViewModel = hiltViewModel(),
+    onLoginSuccess: () -> Unit // Callback для успешного входа
+) {
+    val uiState by viewModel.uiState.collectAsState()
+    val phoneNumber = remember { mutableStateOf("") }
+    val authCode = remember { mutableStateOf("") }
+    val scaffoldState = rememberScaffoldState()
 
     Scaffold(
+        scaffoldState = scaffoldState,
         topBar = {
             TopAppBar(
-                title = { Text("Login") },
-                elevation = 4.dp
+                title = { Text("Login") }
             )
         }
-    ) { padding ->
+    ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding)
-                .padding(16.dp),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
+                .padding(paddingValues) // Учет paddingValues
+                .padding(16.dp), // Дополнительные отступы
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
-            if (!isCodeSent) {
-                TextField(
-                    value = phoneNumber,
-                    onValueChange = { phoneNumber = it },
-                    label = { Text("Phone Number") },
-                    modifier = Modifier.fillMaxWidth(),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone)
-                )
+            // Поле ввода номера телефона
+            OutlinedTextField(
+                value = phoneNumber.value,
+                onValueChange = { phoneNumber.value = it },
+                label = { Text("Phone Number") },
+                keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Phone),
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(modifier = Modifier.height(16.dp))
 
+            // Поле ввода кода авторизации
+            OutlinedTextField(
+                value = authCode.value,
+                onValueChange = { authCode.value = it },
+                label = { Text("Auth Code") },
+                keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Кнопка отправки кода
+            Button(
+                onClick = { viewModel.sendAuthCode(phoneNumber.value) },
+                modifier = Modifier.fillMaxWidth(),
+                enabled = !uiState.isLoading
+            ) {
+                Text("Send Code")
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Кнопка проверки кода
+            Button(
+                onClick = { viewModel.checkAuthCode(phoneNumber.value, authCode.value) },
+                modifier = Modifier.fillMaxWidth(),
+                enabled = !uiState.isLoading
+            ) {
+                Text("Check Code")
+            }
+
+            if (uiState.isLoading) {
                 Spacer(modifier = Modifier.height(16.dp))
+                CircularProgressIndicator()
+            }
 
-                Button(
-                    onClick = {
-                        viewModel.sendAuthCode(phoneNumber)
-                        isCodeSent = true
-                    },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("Send Code")
+            uiState.errorMessage?.let { error ->
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = error,
+                    color = MaterialTheme.colors.error,
+                    textAlign = TextAlign.Center
+                )
+                LaunchedEffect(error) {
+                    scaffoldState.snackbarHostState.showSnackbar(error)
+                    viewModel.resetErrorMessage()
                 }
-            } else {
-                TextField(
-                    value = authCode,
-                    onValueChange = { authCode = it },
-                    label = { Text("Auth Code") },
-                    modifier = Modifier.fillMaxWidth(),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-                )
+            }
 
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Button(
-                    onClick = {
-                        viewModel.sendAuthCode(authCode)
-                    },
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text("Verify Code")
+            if (uiState.loginSuccess) {
+                LaunchedEffect(Unit) {
+                    onLoginSuccess()
                 }
             }
         }

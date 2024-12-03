@@ -11,7 +11,7 @@ interface AuthApi {
     suspend fun sendAuthCode(@Body phoneBase: PhoneBaseDto): Result<Unit>
 
     @POST("/api/v1/users/check-auth-code/")
-    suspend fun checkAuthCode(@Body checkAuthCode: CheckAuthCodeDto): LoginOutDto
+    suspend fun checkAuthCode(@Body checkAuthCode: CheckAuthCodeDto): LoginResponseDto
 
     @POST("/api/v1/users/register/")
     suspend fun registerUser(@Body registerIn: RegisterInDto): TokenDto
