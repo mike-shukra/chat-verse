@@ -1,7 +1,9 @@
 package com.example.chatverse.presentation.ui.login
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.chatverse.data.AppConstants
 import com.example.chatverse.domain.usecase.CheckAuthCodeUseCase
 import com.example.chatverse.domain.usecase.SendAuthCodeUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -34,7 +36,7 @@ class LoginViewModel @Inject constructor(
 
     fun checkAuthCode(phoneNumber: String, authCode: String) {
         _uiState.value = _uiState.value.copy(isLoading = true)
-
+        Log.i(AppConstants.LOG_TAG, "phoneNumber: $phoneNumber")
         viewModelScope.launch {
             val result = runCatching { checkAuthCodeUseCase(phoneNumber, authCode) }
 

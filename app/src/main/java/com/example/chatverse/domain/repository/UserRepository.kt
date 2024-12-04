@@ -7,5 +7,5 @@ import com.example.chatverse.domain.model.User
 interface UserRepository {
     suspend fun sendAuthCode(phone: String): Result<Unit>
 
-    suspend fun checkAuthCode(phone: String, code: String): LoginResult
+    suspend fun checkAuthCode(phoneNumber: String, authCode: String): LoginResult
 }

@@ -1,5 +1,7 @@
 package com.example.chatverse.data.remote.dto
 
+import com.google.gson.annotations.SerializedName
+
 data class UserProfileSendDto(
     val id: Int,
     val name: String,
@@ -14,6 +16,6 @@ data class UserProfileSendDto(
     val last: String?,
     val created: String?,
     val online: Boolean,
-    val completedTask: Int,
+    @SerializedName("completed_task") val completedTask: Int,
     val avatars: AvatarsDto
 )

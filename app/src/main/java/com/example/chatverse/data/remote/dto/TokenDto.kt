@@ -1,7 +1,9 @@
 package com.example.chatverse.data.remote.dto
 
+import com.google.gson.annotations.SerializedName
+
 data class TokenDto(
-    val accessToken: String,
-    val refreshToken: String,
-    val userId: Int
+    @SerializedName("access_token") val accessToken: String,
+    @SerializedName("refresh_token") val refreshToken: String,
+    @SerializedName("user_id") val userId: Int
 )

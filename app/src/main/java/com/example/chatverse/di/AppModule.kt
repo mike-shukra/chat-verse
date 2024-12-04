@@ -15,21 +15,6 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object AppModule {
 
-//    @Provides
-//    @Singleton
-//    fun provideRetrofit(): Retrofit {
-//        return Retrofit.Builder()
-//            .baseUrl("https://api.example.com")
-//            .addConverterFactory(GsonConverterFactory.create())
-//            .build()
-//    }
-
-//    @Provides
-//    @Singleton
-//    fun provideAuthApi(retrofit: Retrofit): AuthApi {
-//        return retrofit.create(AuthApi::class.java)
-//    }
-
     @Provides
     @Singleton
     fun provideUserRepository(authApi: AuthApi): UserRepository {

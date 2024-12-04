@@ -1,5 +1,7 @@
 package com.example.chatverse.data.remote.dto
 
+import com.google.gson.annotations.SerializedName
+
 data class GetCurrentUserProfileDto(
-    val profile_data: UserProfileSendDto
+    @SerializedName("profile_data") val profileData: UserProfileSendDto
 )

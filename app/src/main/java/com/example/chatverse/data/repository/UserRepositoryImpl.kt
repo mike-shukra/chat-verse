@@ -1,16 +1,15 @@
 package com.example.chatverse.data.repository
 
+import com.example.chatverse.data.AppConstants
 import com.example.chatverse.data.remote.api.AuthApi
-import com.example.chatverse.data.mapper.UserMapper
 import com.example.chatverse.data.mapper.mapFromDto
 import com.example.chatverse.data.remote.dto.CheckAuthCodeDto
-import com.example.chatverse.data.remote.dto.LoginOutDto
 import com.example.chatverse.data.remote.dto.LoginResponseDto
 import com.example.chatverse.data.remote.dto.PhoneBaseDto
 import com.example.chatverse.domain.model.LoginResult
-import com.example.chatverse.domain.model.User
 import com.example.chatverse.domain.repository.UserRepository
 import javax.inject.Inject
+import android.util.Log
 
 class UserRepositoryImpl @Inject constructor(
     private val authApi: AuthApi,
@@ -26,7 +25,13 @@ class UserRepositoryImpl @Inject constructor(
     }
 
     override suspend fun checkAuthCode(phoneNumber: String, authCode: String): LoginResult {
+        Log.d(AppConstants.LOG_TAG, "UserRepositoryImpl checkAuthCode phoneNumber: $phoneNumber , authCode: $authCode")
         val response: LoginResponseDto = authApi.checkAuthCode(CheckAuthCodeDto(phoneNumber, authCode))
-        return response.mapFromDto()
+        Log.d(AppConstants.LOG_TAG, "UserRepositoryImpl checkAuthCode response: $response")
+        val loginResult: LoginResult = response.mapFromDto()
+
+        Log.d(AppConstants.LOG_TAG, "UserRepositoryImpl checkAuthCode loginResult: $loginResult")
+
+        return loginResult
     }
 }
