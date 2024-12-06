@@ -1,11 +1,11 @@
-package com.example.chatverse.data.remote
+package com.example.chatverse.di
 
 import android.content.SharedPreferences
 import com.example.chatverse.data.TokenManager
+import com.example.chatverse.data.remote.AuthInterceptor
+import com.example.chatverse.data.remote.TokenAuthenticator
 import com.example.chatverse.data.remote.api.AuthApi
 import com.example.chatverse.data.remote.api.MainApi
-import com.example.chatverse.di.AuthRetrofit
-import com.example.chatverse.di.MainRetrofit
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

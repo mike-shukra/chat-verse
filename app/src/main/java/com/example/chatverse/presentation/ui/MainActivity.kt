@@ -46,23 +46,6 @@ fun AppNavigator() {
                 }
             )
         }
-//        composable("login") {
-//            LoginScreen(
-//                onLoginSuccess = { isRegistered ->
-//                    if (isRegistered) {
-//                        // Если пользователь уже зарегистрирован, переходим в профиль
-//                        navController.navigate("profile") {
-//                            popUpTo("login") { inclusive = true }
-//                        }
-//                    } else {
-//                        // Если нет, перенаправляем на регистрацию
-//                        navController.navigate("register") {
-//                            popUpTo("login") { inclusive = true }
-//                        }
-//                    }
-//                }
-//            )
-//        }
         composable(
             route = "register/{phone}",
             arguments = listOf(navArgument("phone") { type = NavType.StringType })
@@ -78,7 +61,13 @@ fun AppNavigator() {
             )
         }
         composable("profile") {
-            ProfileScreen()
+            ProfileScreen(
+                onLogout = {
+                    navController.navigate("login") {
+                        popUpTo("profile") { inclusive = true }
+                    }
+                }
+            )
         }
     }
 }

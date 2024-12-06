@@ -1,9 +1,8 @@
 package com.example.chatverse.domain.repository
 
-import com.example.chatverse.data.remote.dto.LoginOutDto
+import com.example.chatverse.data.local.model.UserEntity
 import com.example.chatverse.data.remote.dto.RegisterInDto
 import com.example.chatverse.domain.model.LoginResult
-import com.example.chatverse.domain.model.User
 
 interface UserRepository {
     suspend fun sendAuthCode(phone: String): Result<Unit>
@@ -13,4 +12,9 @@ interface UserRepository {
         registerInDto: RegisterInDto,
         onResult: (Boolean, String?) -> Unit
     )
+
+    suspend fun loadUserProfile(): UserEntity?
+    suspend fun saveUserProfile(user: UserEntity)
+    suspend fun logout()
+    suspend fun saveUserProfile(registerInDto: RegisterInDto)
 }

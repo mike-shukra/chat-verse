@@ -10,25 +10,69 @@ import com.example.chatverse.domain.model.LoginResult
 import com.example.chatverse.domain.repository.UserRepository
 import javax.inject.Inject
 import android.util.Log
-import androidx.lifecycle.viewModelScope
 import com.example.chatverse.data.TokenManager
+import com.example.chatverse.data.local.dao.UserDao
+import com.example.chatverse.data.local.model.UserEntity
 import com.example.chatverse.data.remote.dto.RegisterInDto
 import com.example.chatverse.di.AuthRetrofit
-import kotlinx.coroutines.launch
 import javax.inject.Singleton
 
 @Singleton
 class UserRepositoryImpl @Inject constructor(
     @AuthRetrofit private val authApi: AuthApi,
-    private val tokenManager: TokenManager
+    private val tokenManager: TokenManager,
+    private val userDao: UserDao
 ) : UserRepository {
 
+    override suspend fun loadUserProfile(): UserEntity? {
+        return userDao.getUserById(1)
+    }
+
+    override suspend fun saveUserProfile(user: UserEntity) {
+            userDao.insertUser(user)
+    }
+
+    override suspend fun saveUserProfile(registerInDto: RegisterInDto) {
+        val user: UserEntity = UserEntity(
+            id = 1,
+            name = registerInDto.name,
+            username = registerInDto.username,
+            accessToken = tokenManager.getAccessToken()!!,
+            refreshToken = tokenManager.getRefreshToken()!!
+        )
+        userDao.insertUser(user)
+    }
+
+    override suspend fun logout() {
+            userDao.clearUsers()
+    }
+
+    //TODO переделать когда серверное API будет доделано
     override suspend fun registerUser(registerInDto: RegisterInDto, onResult: (Boolean, String?) -> Unit) {
             try {
                 val response = authApi.registerUser(registerInDto)
                 tokenManager.saveTokens(response.accessToken, response.refreshToken)
+
+                val user: UserEntity = UserEntity(
+                    id = 1,
+                    name = registerInDto.name,
+                    username = registerInDto.username,
+                    accessToken = tokenManager.getAccessToken()!!,
+                    refreshToken = tokenManager.getRefreshToken()!!
+                )
+                userDao.insertUser(user)
+
                 onResult(true, null)
+
             } catch (e: Exception) {
+                val user: UserEntity = UserEntity(
+                    id = 1,
+                    name = registerInDto.name,
+                    username = registerInDto.username,
+                    accessToken = tokenManager.getAccessToken()!!,
+                    refreshToken = tokenManager.getRefreshToken()!!
+                )
+                userDao.insertUser(user)
                 onResult(false, e.message)
             }
     }
@@ -49,7 +93,7 @@ class UserRepositoryImpl @Inject constructor(
         val loginResult: LoginResult = response.mapFromDto()
 
         Log.d(AppConstants.LOG_TAG, "UserRepositoryImpl checkAuthCode loginResult: $loginResult")
-
+        tokenManager.saveTokens(response.accessToken, response.refreshToken)
         return loginResult
     }
 }

@@ -10,7 +10,9 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.chatverse.data.local.model.UserEntity
 import com.example.chatverse.data.remote.dto.RegisterInDto
+import com.example.chatverse.presentation.ui.profile.ProfileViewModel
 
 @Composable
 fun RegisterScreen(
@@ -68,12 +70,15 @@ fun RegisterScreen(
                 Button(
                     onClick = {
                         isLoading = true
-                        viewModel.registerUser(RegisterInDto(phone, name, username)) { success, error ->
+                        val registerInDto = RegisterInDto(phone, name, username)
+                        viewModel.registerUser(registerInDto) { success, error ->
                             isLoading = false
                             if (success) {
                                 onRegistrationSuccess()
                             } else {
                                 errorMessage = error
+                                //todo тестовое API не поддерживает создание новых пользователей
+                                onRegistrationSuccess()
                             }
                         }
                     },
