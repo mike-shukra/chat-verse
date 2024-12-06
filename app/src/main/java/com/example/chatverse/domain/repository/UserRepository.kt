@@ -1,6 +1,7 @@
 package com.example.chatverse.domain.repository
 
 import com.example.chatverse.data.local.model.UserEntity
+import com.example.chatverse.data.remote.dto.GetCurrentUserProfileDto
 import com.example.chatverse.data.remote.dto.RegisterInDto
 import com.example.chatverse.domain.model.LoginResult
 
@@ -17,4 +18,5 @@ interface UserRepository {
     suspend fun saveUserProfile(user: UserEntity)
     suspend fun logout()
     suspend fun saveUserProfile(registerInDto: RegisterInDto)
+    suspend fun loadRemoteUser(): GetCurrentUserProfileDto
 }

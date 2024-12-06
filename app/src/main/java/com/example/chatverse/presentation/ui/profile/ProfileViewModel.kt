@@ -35,6 +35,8 @@ class ProfileViewModel @Inject constructor(
                 userName.value = user.username
                 userFullName.value = user.name
             }
+            val remoteUser = repository.loadRemoteUser()
+            Log.d(AppConstants.LOG_TAG, "ProfileViewModel - loadUserProfile remoteUser: $remoteUser")
         }
     }
 

@@ -13,17 +13,25 @@ import android.util.Log
 import com.example.chatverse.data.TokenManager
 import com.example.chatverse.data.local.dao.UserDao
 import com.example.chatverse.data.local.model.UserEntity
+import com.example.chatverse.data.remote.api.MainApi
+import com.example.chatverse.data.remote.dto.GetCurrentUserProfileDto
 import com.example.chatverse.data.remote.dto.RegisterInDto
 import com.example.chatverse.di.AuthRetrofit
+import com.example.chatverse.di.MainRetrofit
 import javax.inject.Singleton
 
 @Singleton
 class UserRepositoryImpl @Inject constructor(
     @AuthRetrofit private val authApi: AuthApi,
+    @MainRetrofit private val mainApi: MainApi,
     private val tokenManager: TokenManager,
     private val userDao: UserDao
 ) : UserRepository {
 
+
+    override suspend fun loadRemoteUser(): GetCurrentUserProfileDto {
+        return mainApi.getCurrentUser()
+    }
     override suspend fun loadUserProfile(): UserEntity? {
         return userDao.getUserById(1)
     }

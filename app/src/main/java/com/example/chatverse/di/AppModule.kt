@@ -5,6 +5,7 @@ import android.content.SharedPreferences
 import com.example.chatverse.data.TokenManager
 import com.example.chatverse.data.local.dao.UserDao
 import com.example.chatverse.data.remote.api.AuthApi
+import com.example.chatverse.data.remote.api.MainApi
 import com.example.chatverse.data.repository.UserRepositoryImpl
 import com.example.chatverse.domain.repository.UserRepository
 import dagger.Module
@@ -22,8 +23,11 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideUserRepository(@AuthRetrofit authApi: AuthApi, tokenManager: TokenManager, userDao: UserDao): UserRepository {
-        return UserRepositoryImpl(authApi, tokenManager, userDao)
+    fun provideUserRepository(
+        @AuthRetrofit authApi: AuthApi,
+        @MainRetrofit mainApi: MainApi,
+        tokenManager: TokenManager, userDao: UserDao): UserRepository {
+        return UserRepositoryImpl(authApi, mainApi, tokenManager, userDao)
     }
 
     @Provides
