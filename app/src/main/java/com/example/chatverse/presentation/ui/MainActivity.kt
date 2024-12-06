@@ -10,6 +10,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.chatverse.presentation.ui.login.LoginScreen
 import com.example.chatverse.presentation.ui.main.MainScreen
+import com.example.chatverse.presentation.ui.profile.ProfileScreen
+import com.example.chatverse.presentation.ui.register.RegisterScreen
 import com.example.chatverse.presentation.ui.theme.MyProjectTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -28,6 +30,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun AppNavigator() {
     val navController = rememberNavController()
+
     NavHost(
         navController = navController,
         startDestination = "login"
@@ -42,8 +45,35 @@ fun AppNavigator() {
                 }
             )
         }
-        composable("main") {
-            MainScreen()
+//        composable("login") {
+//            LoginScreen(
+//                onLoginSuccess = { isRegistered ->
+//                    if (isRegistered) {
+//                        // Если пользователь уже зарегистрирован, переходим в профиль
+//                        navController.navigate("profile") {
+//                            popUpTo("login") { inclusive = true }
+//                        }
+//                    } else {
+//                        // Если нет, перенаправляем на регистрацию
+//                        navController.navigate("register") {
+//                            popUpTo("login") { inclusive = true }
+//                        }
+//                    }
+//                }
+//            )
+//        }
+        composable("register") {
+            RegisterScreen(
+                onRegistrationSuccess = {
+                    navController.navigate("profile") {
+                        popUpTo("register") { inclusive = true }
+                    }
+                }
+            )
+        }
+        composable("profile") {
+            ProfileScreen()
         }
     }
 }
+

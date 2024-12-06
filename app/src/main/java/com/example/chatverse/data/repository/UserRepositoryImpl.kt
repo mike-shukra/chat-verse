@@ -10,9 +10,12 @@ import com.example.chatverse.domain.model.LoginResult
 import com.example.chatverse.domain.repository.UserRepository
 import javax.inject.Inject
 import android.util.Log
+import com.example.chatverse.di.AuthRetrofit
+import javax.inject.Singleton
 
+@Singleton
 class UserRepositoryImpl @Inject constructor(
-    private val authApi: AuthApi,
+    @AuthRetrofit private val authApi: AuthApi,
 ) : UserRepository {
 
     override suspend fun sendAuthCode(phone: String): Result<Unit> {

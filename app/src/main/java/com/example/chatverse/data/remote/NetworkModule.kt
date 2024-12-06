@@ -1,6 +1,11 @@
 package com.example.chatverse.data.remote
 
+import android.content.SharedPreferences
+import com.example.chatverse.data.TokenManager
 import com.example.chatverse.data.remote.api.AuthApi
+import com.example.chatverse.data.remote.api.MainApi
+import com.example.chatverse.di.AuthRetrofit
+import com.example.chatverse.di.MainRetrofit
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -27,9 +32,8 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideOkHttpClient(
-        loggingInterceptor: HttpLoggingInterceptor,
-    ): OkHttpClient {
+    @AuthRetrofit
+    fun provideAuthOkHttpClient(loggingInterceptor: HttpLoggingInterceptor): OkHttpClient {
         return OkHttpClient.Builder()
             .addInterceptor(loggingInterceptor)
             .build()
@@ -37,17 +41,68 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideRetrofit(okHttpClient: OkHttpClient): Retrofit {
+    @MainRetrofit
+    fun provideMainOkHttpClient(
+        authInterceptor: AuthInterceptor,
+        tokenAuthenticator: TokenAuthenticator,
+        loggingInterceptor: HttpLoggingInterceptor
+    ): OkHttpClient {
+        return OkHttpClient.Builder()
+            .addInterceptor(authInterceptor)
+            .authenticator(tokenAuthenticator)
+            .addInterceptor(loggingInterceptor)
+            .build()
+    }
+
+    @Provides
+    @Singleton
+    @AuthRetrofit
+    fun provideAuthRetrofit(@AuthRetrofit authOkHttpClient: OkHttpClient): Retrofit {
         return Retrofit.Builder()
             .baseUrl(BASE_URL)
-            .client(okHttpClient)
+            .client(authOkHttpClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
     }
 
     @Provides
     @Singleton
-    fun provideAuthApi(retrofit: Retrofit): AuthApi {
-        return retrofit.create(AuthApi::class.java)
+    @MainRetrofit
+    fun provideMainRetrofit(@MainRetrofit mainOkHttpClient: OkHttpClient): Retrofit {
+        return Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .client(mainOkHttpClient)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+    }
+
+    @Provides
+    @Singleton
+    fun provideTokenManager(sharedPreferences: SharedPreferences): TokenManager {
+        return TokenManager(sharedPreferences)
+    }
+
+    @Provides
+    @Singleton
+    fun provideTokenAuthenticator(
+        tokenManager: TokenManager,
+        @AuthRetrofit authRetrofit: Retrofit
+    ): TokenAuthenticator {
+        val authApi = authRetrofit.create(AuthApi::class.java)
+        return TokenAuthenticator(tokenManager, authApi)
+    }
+
+    @Provides
+    @Singleton
+    @AuthRetrofit
+    fun provideAuthApi(@AuthRetrofit authRetrofit: Retrofit): AuthApi {
+        return authRetrofit.create(AuthApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    @MainRetrofit
+    fun provideMainApi(@MainRetrofit mainRetrofit: Retrofit): MainApi {
+        return mainRetrofit.create(MainApi::class.java)
     }
 }

@@ -13,9 +13,10 @@ interface AuthApi {
     @POST("/api/v1/users/check-auth-code/")
     suspend fun checkAuthCode(@Body checkAuthCode: CheckAuthCodeDto): LoginResponseDto
 
+    @POST("users/refresh-token/")
+    suspend fun refreshToken(@Body refreshToken: RefreshTokenDto): TokenDto
+
     @POST("/api/v1/users/register/")
     suspend fun registerUser(@Body registerIn: RegisterInDto): TokenDto
 
-    @GET("/api/v1/users/me/")
-    suspend fun getCurrentUser(): GetCurrentUserProfileDto
 }
