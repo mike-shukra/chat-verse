@@ -2,6 +2,7 @@ package com.example.chatverse.di
 
 import android.content.Context
 import android.content.SharedPreferences
+import com.example.chatverse.data.TokenManager
 import com.example.chatverse.data.remote.api.AuthApi
 import com.example.chatverse.data.repository.UserRepositoryImpl
 import com.example.chatverse.domain.repository.UserRepository
@@ -22,8 +23,8 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideUserRepository(@AuthRetrofit authApi: AuthApi): UserRepository {
-        return UserRepositoryImpl(authApi)
+    fun provideUserRepository(@AuthRetrofit authApi: AuthApi, tokenManager: TokenManager): UserRepository {
+        return UserRepositoryImpl(authApi, tokenManager)
     }
 
     @Provides

@@ -10,13 +10,28 @@ import com.example.chatverse.domain.model.LoginResult
 import com.example.chatverse.domain.repository.UserRepository
 import javax.inject.Inject
 import android.util.Log
+import androidx.lifecycle.viewModelScope
+import com.example.chatverse.data.TokenManager
+import com.example.chatverse.data.remote.dto.RegisterInDto
 import com.example.chatverse.di.AuthRetrofit
+import kotlinx.coroutines.launch
 import javax.inject.Singleton
 
 @Singleton
 class UserRepositoryImpl @Inject constructor(
     @AuthRetrofit private val authApi: AuthApi,
+    private val tokenManager: TokenManager
 ) : UserRepository {
+
+    override suspend fun registerUser(registerInDto: RegisterInDto, onResult: (Boolean, String?) -> Unit) {
+            try {
+                val response = authApi.registerUser(registerInDto)
+                tokenManager.saveTokens(response.accessToken, response.refreshToken)
+                onResult(true, null)
+            } catch (e: Exception) {
+                onResult(false, e.message)
+            }
+    }
 
     override suspend fun sendAuthCode(phone: String): Result<Unit> {
         return try {

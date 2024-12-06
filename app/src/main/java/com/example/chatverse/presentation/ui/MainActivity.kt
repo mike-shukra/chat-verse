@@ -5,9 +5,11 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.Composable
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.chatverse.presentation.ui.login.LoginScreen
 import com.example.chatverse.presentation.ui.main.MainScreen
 import com.example.chatverse.presentation.ui.profile.ProfileScreen
@@ -37,9 +39,8 @@ fun AppNavigator() {
     ) {
         composable("login") {
             LoginScreen(
-                onLoginSuccess = {
-                    navController.navigate("main") {
-                        // Удаляем экран авторизации из стека, чтобы пользователь не мог вернуться
+                onLoginSuccess = { phone ->
+                    navController.navigate("register/$phone") {
                         popUpTo("login") { inclusive = true }
                     }
                 }
@@ -62,11 +63,16 @@ fun AppNavigator() {
 //                }
 //            )
 //        }
-        composable("register") {
+        composable(
+            route = "register/{phone}",
+            arguments = listOf(navArgument("phone") { type = NavType.StringType })
+        ) { backStackEntry ->
+            val phone = backStackEntry.arguments?.getString("phone") ?: ""
             RegisterScreen(
+                phone = phone,
                 onRegistrationSuccess = {
                     navController.navigate("profile") {
-                        popUpTo("register") { inclusive = true }
+                        popUpTo("register/{phone}") { inclusive = true }
                     }
                 }
             )

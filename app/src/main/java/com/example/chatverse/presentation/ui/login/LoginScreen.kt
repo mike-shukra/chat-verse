@@ -17,10 +17,11 @@ import com.example.chatverse.data.AppConstants
 @Composable
 fun LoginScreen(
     viewModel: LoginViewModel = hiltViewModel(),
-    onLoginSuccess: () -> Unit // Callback для успешного входа
+    onLoginSuccess: (String) -> Unit // Callback для успешного входа
 ) {
+    var password by remember { mutableStateOf("") }
     val uiState by viewModel.uiState.collectAsState()
-    val phoneNumber = remember { mutableStateOf("") }
+    val phone = remember { mutableStateOf("") }
     val authCode = remember { mutableStateOf("") }
     val scaffoldState = rememberScaffoldState()
 
@@ -42,8 +43,8 @@ fun LoginScreen(
         ) {
             // Поле ввода номера телефона
             OutlinedTextField(
-                value = phoneNumber.value,
-                onValueChange = { phoneNumber.value = it },
+                value = phone.value,
+                onValueChange = { phone.value = it },
                 label = { Text("Phone Number") },
                 keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Phone),
                 modifier = Modifier.fillMaxWidth()
@@ -62,7 +63,7 @@ fun LoginScreen(
 
             // Кнопка отправки кода
             Button(
-                onClick = { viewModel.sendAuthCode(phoneNumber.value) },
+                onClick = { viewModel.sendAuthCode(phone.value) },
                 modifier = Modifier.fillMaxWidth(),
                 enabled = !uiState.isLoading
             ) {
@@ -72,7 +73,7 @@ fun LoginScreen(
 
             // Кнопка проверки кода
             Button(
-                onClick = { viewModel.checkAuthCode(phoneNumber.value, authCode.value) },
+                onClick = { viewModel.checkAuthCode(phone.value, authCode.value) },
                 modifier = Modifier.fillMaxWidth(),
                 enabled = !uiState.isLoading
             ) {
@@ -99,7 +100,7 @@ fun LoginScreen(
 
             if (uiState.loginSuccess) {
                 LaunchedEffect(Unit) {
-                    onLoginSuccess()
+                    onLoginSuccess(phone.value)
                 }
             }
         }

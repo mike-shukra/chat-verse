@@ -10,52 +10,65 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.chatverse.data.remote.dto.RegisterInDto
 
 @Composable
 fun RegisterScreen(
-    viewModel: RegisterViewModel = hiltViewModel(),
+    phone: String,
     onRegistrationSuccess: () -> Unit
 ) {
+    var name by remember { mutableStateOf("") }
     var username by remember { mutableStateOf("") }
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
+    var isLoading by remember { mutableStateOf(false) }
 
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+    val viewModel: RegisterViewModel = hiltViewModel()
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        contentAlignment = Alignment.Center
+    ) {
         if (isLoading) {
             CircularProgressIndicator()
         } else {
             Column(
-                modifier = Modifier.padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                TextField(
-                    value = username,
-                    onValueChange = { username = it },
-                    label = { Text("Username") },
+                // Номер телефона
+                Text(
+                    text = "Phone: $phone",
+                    style = MaterialTheme.typography.body1
+                )
+
+                // Поле ввода имени
+                OutlinedTextField(
+                    value = name,
+                    onValueChange = { name = it },
+                    label = { Text("Name") },
                     modifier = Modifier.fillMaxWidth()
                 )
-                TextField(
-                    value = email,
-                    onValueChange = { email = it },
-                    label = { Text("Email") },
+
+                // Поле ввода username с валидацией
+                OutlinedTextField(
+                    value = username,
+                    onValueChange = { input ->
+                        if (input.matches("^[A-Za-z0-9\\-_]*$".toRegex())) {
+                            username = input
+                        }
+                    },
+                    label = { Text("Username") },
                     modifier = Modifier.fillMaxWidth(),
-                    keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Email)
+                    placeholder = { Text("Only A-Z, a-z, 0-9, -, _") }
                 )
-                TextField(
-                    value = password,
-                    onValueChange = { password = it },
-                    label = { Text("Password") },
-                    modifier = Modifier.fillMaxWidth(),
-                    visualTransformation = PasswordVisualTransformation(),
-                    keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Password)
-                )
+
+                // Кнопка регистрации
                 Button(
                     onClick = {
                         isLoading = true
-                        viewModel.registerUser(username, email, password) { success, error ->
+                        viewModel.registerUser(RegisterInDto(phone, name, username)) { success, error ->
                             isLoading = false
                             if (success) {
                                 onRegistrationSuccess()
@@ -64,13 +77,16 @@ fun RegisterScreen(
                             }
                         }
                     },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = name.isNotEmpty() && username.isNotEmpty()
                 ) {
                     Text("Register")
                 }
-                if (errorMessage != null) {
+
+                // Ошибка
+                errorMessage?.let {
                     Text(
-                        text = errorMessage ?: "",
+                        text = it,
                         color = MaterialTheme.colors.error,
                         modifier = Modifier.padding(top = 8.dp)
                     )
