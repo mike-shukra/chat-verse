@@ -12,7 +12,7 @@ import javax.inject.Inject
 import android.util.Log
 import com.example.chatverse.data.TokenManager
 import com.example.chatverse.data.local.dao.UserDao
-import com.example.chatverse.data.local.model.UserEntity
+import com.example.chatverse.data.local.model.UserProfileEntity
 import com.example.chatverse.data.remote.api.MainApi
 import com.example.chatverse.data.remote.dto.GetCurrentUserProfileDto
 import com.example.chatverse.data.remote.dto.RegisterInDto
@@ -32,23 +32,20 @@ class UserRepositoryImpl @Inject constructor(
     override suspend fun loadRemoteUser(): GetCurrentUserProfileDto {
         return mainApi.getCurrentUser()
     }
-    override suspend fun loadUserProfile(): UserEntity? {
+    override suspend fun loadUserProfile(): UserProfileEntity? {
         return userDao.getUserById(1)
     }
 
-    override suspend fun saveUserProfile(user: UserEntity) {
+    override suspend fun loadProfile(): UserProfileEntity? {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun saveUserProfile(user: UserProfileEntity) {
             userDao.insertUser(user)
     }
 
     override suspend fun saveUserProfile(registerInDto: RegisterInDto) {
-        val user: UserEntity = UserEntity(
-            id = 1,
-            name = registerInDto.name,
-            username = registerInDto.username,
-            accessToken = tokenManager.getAccessToken()!!,
-            refreshToken = tokenManager.getRefreshToken()!!
-        )
-        userDao.insertUser(user)
+        TODO("Not yet implemented")
     }
 
     override suspend fun logout() {
@@ -61,22 +58,43 @@ class UserRepositoryImpl @Inject constructor(
                 val response = authApi.registerUser(registerInDto)
                 tokenManager.saveTokens(response.accessToken, response.refreshToken)
 
-                val user: UserEntity = UserEntity(
+                val user = UserProfileEntity(
                     id = 1,
                     name = registerInDto.name,
                     username = registerInDto.username,
+                    birthday = "1970-01-01",
+                    city = "",
+                    vk = "",
+                    instagram = "",
+                    status = "",
+                    avatar = "",
+                    phone = "",
+                    last = "",
+                    created = "",
+                    online = true,
+                    completedTask = 1,
                     accessToken = tokenManager.getAccessToken()!!,
                     refreshToken = tokenManager.getRefreshToken()!!
                 )
                 userDao.insertUser(user)
-
                 onResult(true, null)
 
             } catch (e: Exception) {
-                val user: UserEntity = UserEntity(
+                val user = UserProfileEntity(
                     id = 1,
                     name = registerInDto.name,
                     username = registerInDto.username,
+                    birthday = "1970-01-01",
+                    city = "",
+                    vk = "",
+                    instagram = "",
+                    status = "",
+                    avatar = "",
+                    phone = "",
+                    last = "",
+                    created = "",
+                    online = true,
+                    completedTask = 1,
                     accessToken = tokenManager.getAccessToken()!!,
                     refreshToken = tokenManager.getRefreshToken()!!
                 )

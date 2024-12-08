@@ -5,17 +5,17 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Delete
-import com.example.chatverse.data.local.model.UserEntity
+import com.example.chatverse.data.local.model.UserProfileEntity
 
 @Dao
 interface UserDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertUser(user: UserEntity)
+    suspend fun insertUser(user: UserProfileEntity)
 
-    @Query("SELECT * FROM user WHERE id = :id LIMIT 1")
-    suspend fun getUserById(id: Int): UserEntity?
+    @Query("SELECT * FROM userprofile WHERE id = :id LIMIT 1")
+    suspend fun getUserById(id: Int): UserProfileEntity?
 
-    @Query("DELETE FROM user")
+    @Query("DELETE FROM userprofile")
     suspend fun clearUsers()
 }

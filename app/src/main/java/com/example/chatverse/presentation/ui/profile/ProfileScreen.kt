@@ -1,24 +1,28 @@
 package com.example.chatverse.presentation.ui.profile
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.*
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.chatverse.data.remote.dto.RegisterInDto
+import coil.ImageLoader
+import com.example.chatverse.presentation.ui.components.ProfileAvatar
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
     viewModel: ProfileViewModel = hiltViewModel(),
-    onLogout: () -> Unit
+    onLogout: () -> Unit,
+    imageLoader: ImageLoader
 ) {
-    val userName by viewModel.userName
-    val userFullName by viewModel.userFullName
+    val avatarUrl = viewModel.avatarUrl.value
+    val phone = viewModel.phone.value
+    val city = viewModel.city.value
+    val birthDate = viewModel.birthDate.value
+    val zodiacSign = viewModel.zodiacSign.value
+    val about = viewModel.about.value
 
     Scaffold(
         topBar = {
@@ -35,20 +39,19 @@ fun ProfileScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Top
         ) {
-            Text(
-                text = "Welcome, $userFullName!",
-                style = MaterialTheme.typography.h5,
-                modifier = Modifier.fillMaxWidth(),
-                textAlign = TextAlign.Center
-            )
+            if (!avatarUrl.equals("")) {
+                ProfileAvatar(
+                    avatarUrl = avatarUrl,
+                    imageLoader = imageLoader
+                )
+            }
             Spacer(modifier = Modifier.height(16.dp))
 
-            Text(
-                text = "Username: $userName",
-                style = MaterialTheme.typography.body1,
-                modifier = Modifier.fillMaxWidth(),
-                textAlign = TextAlign.Center
-            )
+            Text(text = "Phone: $phone", style = MaterialTheme.typography.bodyMedium)
+            Text(text = "City: $city", style = MaterialTheme.typography.bodyMedium)
+            Text(text = "Birth Date: $birthDate", style = MaterialTheme.typography.bodyMedium)
+            Text(text = "Zodiac: $zodiacSign", style = MaterialTheme.typography.bodyMedium)
+            Text(text = "About: $about", style = MaterialTheme.typography.bodyMedium)
             Spacer(modifier = Modifier.height(32.dp))
 
             Button(

@@ -1,6 +1,7 @@
 package com.example.chatverse.di
 
 import android.content.SharedPreferences
+import com.example.chatverse.data.AppConstants
 import com.example.chatverse.data.TokenManager
 import com.example.chatverse.data.remote.AuthInterceptor
 import com.example.chatverse.data.remote.TokenAuthenticator
@@ -20,7 +21,8 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
 
-    private const val BASE_URL = "https://plannerok.ru/"
+    private const val BASE_URL = AppConstants.BASE_URL
+
 
     @Provides
     @Singleton

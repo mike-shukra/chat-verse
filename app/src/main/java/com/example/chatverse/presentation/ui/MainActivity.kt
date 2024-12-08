@@ -10,27 +10,32 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import coil.ImageLoader
 import com.example.chatverse.presentation.ui.login.LoginScreen
 import com.example.chatverse.presentation.ui.main.MainScreen
 import com.example.chatverse.presentation.ui.profile.ProfileScreen
 import com.example.chatverse.presentation.ui.register.RegisterScreen
-import com.example.chatverse.presentation.ui.theme.MyProjectTheme
+import com.example.chatverse.presentation.ui.theme.ChatverseTheme
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    @Inject
+    lateinit var imageLoader: ImageLoader
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            MyProjectTheme {
-                AppNavigator()
+            ChatverseTheme {
+                AppNavigator(imageLoader = imageLoader)
             }
         }
     }
 }
 
 @Composable
-fun AppNavigator() {
+fun AppNavigator(imageLoader: ImageLoader) {
     val navController = rememberNavController()
 
     NavHost(
@@ -66,7 +71,8 @@ fun AppNavigator() {
                     navController.navigate("login") {
                         popUpTo("profile") { inclusive = true }
                     }
-                }
+                },
+                imageLoader = imageLoader
             )
         }
     }

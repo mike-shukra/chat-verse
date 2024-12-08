@@ -1,18 +1,17 @@
 package com.example.chatverse.presentation.ui.register
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.chatverse.data.local.model.UserEntity
 import com.example.chatverse.data.remote.dto.RegisterInDto
-import com.example.chatverse.presentation.ui.profile.ProfileViewModel
 
 @Composable
 fun RegisterScreen(
@@ -42,7 +41,7 @@ fun RegisterScreen(
                 // Номер телефона
                 Text(
                     text = "Phone: $phone",
-                    style = MaterialTheme.typography.body1
+                    style = MaterialTheme.typography.bodyMedium
                 )
 
                 // Поле ввода имени
@@ -92,7 +91,7 @@ fun RegisterScreen(
                 errorMessage?.let {
                     Text(
                         text = it,
-                        color = MaterialTheme.colors.error,
+                        color = MaterialTheme.colorScheme.error,
                         modifier = Modifier.padding(top = 8.dp)
                     )
                 }
