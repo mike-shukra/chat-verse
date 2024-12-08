@@ -1,5 +1,6 @@
 package com.example.chatverse.presentation.ui.register
 
+import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -11,6 +12,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.chatverse.data.AppConstants
 import com.example.chatverse.data.remote.dto.RegisterInDto
 
 @Composable
@@ -48,7 +50,7 @@ fun RegisterScreen(
                 OutlinedTextField(
                     value = name,
                     onValueChange = { name = it },
-                    label = { Text("Name") },
+                    label = { Text("Name", style = MaterialTheme.typography.labelLarge) },
                     modifier = Modifier.fillMaxWidth()
                 )
 
@@ -60,7 +62,7 @@ fun RegisterScreen(
                             username = input
                         }
                     },
-                    label = { Text("Username") },
+                    label = { Text("Username", style = MaterialTheme.typography.labelLarge) },
                     modifier = Modifier.fillMaxWidth(),
                     placeholder = { Text("Only A-Z, a-z, 0-9, -, _") }
                 )
@@ -76,6 +78,7 @@ fun RegisterScreen(
                                 onRegistrationSuccess()
                             } else {
                                 errorMessage = error
+                                Log.d(AppConstants.LOG_TAG, "RegisterScreen - errorMessage: $error")
                                 //todo тестовое API не поддерживает создание новых пользователей
                                 onRegistrationSuccess()
                             }
@@ -84,7 +87,8 @@ fun RegisterScreen(
                     modifier = Modifier.fillMaxWidth(),
                     enabled = name.isNotEmpty() && username.isNotEmpty()
                 ) {
-                    Text("Register")
+                    Text("Register", style = MaterialTheme.typography.bodyLarge
+                        .copy(color = MaterialTheme.colorScheme.onPrimary))
                 }
 
                 // Ошибка

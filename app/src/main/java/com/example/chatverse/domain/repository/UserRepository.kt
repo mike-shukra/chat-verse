@@ -16,7 +16,7 @@ interface UserRepository {
 
     suspend fun loadUserProfile(): UserProfileEntity?
     suspend fun loadProfile(): UserProfileEntity?
-    suspend fun saveUserProfile(user: UserProfileEntity )
+    suspend fun saveUserProfile(registerInDto: GetCurrentUserProfileDto, onResult: (Boolean, String?) -> Unit)
     suspend fun logout()
     suspend fun saveUserProfile(registerInDto: RegisterInDto)
     suspend fun loadRemoteUser(): GetCurrentUserProfileDto

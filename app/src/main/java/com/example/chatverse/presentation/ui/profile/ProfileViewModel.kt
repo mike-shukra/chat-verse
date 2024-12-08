@@ -54,7 +54,7 @@ class ProfileViewModel @Inject constructor(
             }
             val remoteUser = repository.loadRemoteUser()
             Log.d(AppConstants.LOG_TAG, "ProfileViewModel - loadUserProfile remoteUser: $remoteUser")
-
+           //TODO
             remoteUser.profileData.avatar.let {
                 avatarUrl.value = it!!
             }
@@ -91,11 +91,11 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
-    fun saveUserProfile(user: UserProfileEntity) {
-        viewModelScope.launch {
-            repository.saveUserProfile(user)
-        }
-    }
+//    fun saveUserProfile(user: UserProfileEntity) {
+//        viewModelScope.launch {
+//            repository.saveUserProfile(user)
+//        }
+//    }
 
     fun logout() {
         viewModelScope.launch {

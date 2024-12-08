@@ -1,5 +1,6 @@
 package com.example.chatverse.presentation.ui.login
 
+import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
@@ -10,12 +11,13 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.chatverse.data.AppConstants
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(
     viewModel: LoginViewModel = hiltViewModel(),
-    onLoginSuccess: (String) -> Unit // Callback для успешного входа
+    onLoginSuccess: (String, Boolean) -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val phone = remember { mutableStateOf("") }
@@ -72,7 +74,8 @@ fun LoginScreen(
                     contentColor = MaterialTheme.colorScheme.onPrimary
                 )
             ) {
-                Text("Send Code", style = MaterialTheme.typography.bodyLarge)
+                Text("Send Code", style = MaterialTheme.typography.bodyLarge
+                    .copy(color = MaterialTheme.colorScheme.onPrimary))
             }
             Spacer(modifier = Modifier.height(8.dp))
 
@@ -86,7 +89,8 @@ fun LoginScreen(
                     contentColor = MaterialTheme.colorScheme.onPrimary
                 )
             ) {
-                Text("Check Code", style = MaterialTheme.typography.bodyLarge)
+                Text("Check Code", style = MaterialTheme.typography.bodyLarge
+                    .copy(color = MaterialTheme.colorScheme.onPrimary))
             }
 
             if (uiState.isLoading) {
@@ -95,6 +99,7 @@ fun LoginScreen(
             }
 
             uiState.errorMessage?.let { error ->
+                Log.d(AppConstants.LOG_TAG, "LoginScreen - errorMessage: $error")
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
                     text = error,
@@ -110,7 +115,13 @@ fun LoginScreen(
 
             if (uiState.loginSuccess) {
                 LaunchedEffect(Unit) {
-                    onLoginSuccess(phone.value)
+                    viewModel.saveUser { success, error ->
+                        if (success) {
+                            onLoginSuccess(phone.value, uiState.isUserExists!!)
+                        } else {
+                            //TODO
+                        }
+                    }
                 }
             }
         }

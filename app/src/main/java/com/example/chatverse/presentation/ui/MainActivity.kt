@@ -11,6 +11,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import coil.ImageLoader
+import com.example.chatverse.data.AppConstants
 import com.example.chatverse.presentation.ui.login.LoginScreen
 import com.example.chatverse.presentation.ui.main.MainScreen
 import com.example.chatverse.presentation.ui.profile.ProfileScreen
@@ -44,9 +45,16 @@ fun AppNavigator(imageLoader: ImageLoader) {
     ) {
         composable("login") {
             LoginScreen(
-                onLoginSuccess = { phone ->
-                    navController.navigate("register/$phone") {
-                        popUpTo("login") { inclusive = true }
+                onLoginSuccess = { phone, isUserExist ->
+                    Log.d(AppConstants.LOG_TAG, "LoginScreen - onLoginSuccess")
+                    if (!isUserExist) {
+                        navController.navigate("register/$phone") {
+                            popUpTo("login") { inclusive = true }
+                        }
+                    } else {
+                        navController.navigate("profile") {
+                            popUpTo("login") { inclusive = true }
+                        }
                     }
                 }
             )

@@ -47,11 +47,26 @@ fun ProfileScreen(
             }
             Spacer(modifier = Modifier.height(16.dp))
 
-            Text(text = "Phone: $phone", style = MaterialTheme.typography.bodyMedium)
-            Text(text = "City: $city", style = MaterialTheme.typography.bodyMedium)
-            Text(text = "Birth Date: $birthDate", style = MaterialTheme.typography.bodyMedium)
-            Text(text = "Zodiac: $zodiacSign", style = MaterialTheme.typography.bodyMedium)
-            Text(text = "About: $about", style = MaterialTheme.typography.bodyMedium)
+            Text(
+                text = "Phone: $phone",
+                style = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
+            )
+            Text(
+                text = "City: $city",
+                style = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
+            )
+            Text(
+                text = "Birth Date: $birthDate",
+                style = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
+            )
+            Text(
+                text = "Zodiac: $zodiacSign",
+                style = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
+            )
+            Text(
+                text = "About: $about",
+                style = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
+            )
             Spacer(modifier = Modifier.height(32.dp))
 
             Button(

@@ -40,8 +40,27 @@ class UserRepositoryImpl @Inject constructor(
         TODO("Not yet implemented")
     }
 
-    override suspend fun saveUserProfile(user: UserProfileEntity) {
-            userDao.insertUser(user)
+    override suspend fun saveUserProfile(registerInDto: GetCurrentUserProfileDto, onResult: (Boolean, String?) -> Unit) {
+        val user = UserProfileEntity(
+            id = 1,
+            name = registerInDto.profileData.name,
+            username = registerInDto.profileData.username,
+            birthday = registerInDto.profileData.birthday,
+            city = registerInDto.profileData.city,
+            vk = registerInDto.profileData.vk,
+            instagram = registerInDto.profileData.instagram,
+            status = registerInDto.profileData.status,
+            avatar = registerInDto.profileData.avatar,
+            phone = registerInDto.profileData.phone,
+            last = registerInDto.profileData.last,
+            created = registerInDto.profileData.created,
+            online = true,
+            completedTask = 1,
+            accessToken = tokenManager.getAccessToken()!!,
+            refreshToken = tokenManager.getRefreshToken()!!
+        )
+        userDao.insertUser(user)
+        onResult(true, null)
     }
 
     override suspend fun saveUserProfile(registerInDto: RegisterInDto) {

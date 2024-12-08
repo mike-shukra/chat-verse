@@ -10,9 +10,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class RegisterViewModel @Inject constructor(
-
-    private val  repository: UserRepository,
-
+    private val  repository: UserRepository
 ) : ViewModel() {
 
     fun registerUser(registerInDto: RegisterInDto, onResult: (Boolean, String?) -> Unit) {
