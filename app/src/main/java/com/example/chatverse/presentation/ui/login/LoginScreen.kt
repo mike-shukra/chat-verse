@@ -12,6 +12,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.chatverse.data.AppConstants
+import com.example.chatverse.presentation.ui.components.CountryPicker
+import com.example.chatverse.presentation.ui.components.PhoneNumberInput
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -20,9 +23,21 @@ fun LoginScreen(
     onLoginSuccess: (String, Boolean) -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val phone = remember { mutableStateOf("") }
     val authCode = remember { mutableStateOf("") }
     val snackbarHostState = remember { SnackbarHostState() }
+
+    var phoneNumber by remember { mutableStateOf("") }
+    var countryCode by remember { mutableStateOf("+1") }
+
+    var currentRegion = Locale.getDefault().country
+
+    val countries = listOf(
+        "US" to "+1",
+        "RU" to "+7",
+        "IN" to "+91",
+        "FR" to "+33",
+        "DE" to "+49"
+    )
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
@@ -42,17 +57,48 @@ fun LoginScreen(
                 .padding(paddingValues) // Учет paddingValues
                 .padding(16.dp), // Дополнительные отступы
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            verticalArrangement = Arrangement.Top
         ) {
-            // Поле ввода номера телефона
-            OutlinedTextField(
-                value = phone.value,
-                onValueChange = { phone.value = it },
-                label = { Text("Phone Number", style = MaterialTheme.typography.labelLarge) },
-                keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Phone),
-                modifier = Modifier.fillMaxWidth()
-            )
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 0.dp), // Отступы от краёв экрана
+                verticalAlignment = Alignment.CenterVertically, // Выравнивание по вертикали
+                horizontalArrangement = Arrangement.spacedBy(8.dp) // Расстояние между элементами
+            ) {
+                CountryPicker(
+                    currentRegion = currentRegion,
+                    onCountrySelected = { newCode ->
+                        countryCode = newCode
+                        currentRegion = countries.find { it.second == newCode }?.first ?: "US"
+                    }
+                )
+                PhoneNumberInput(
+                    phoneNumber = phoneNumber,
+                    onPhoneNumberChange = { phoneNumber = it },
+                    countryCode = countryCode,
+                    modifier = Modifier.weight(1f) // Элемент растягивается, занимая оставшееся пространство
+                )
+            }
+
             Spacer(modifier = Modifier.height(16.dp))
+
+            // Кнопка отправки кода
+            Button(
+                onClick = { viewModel.sendAuthCode(countryCode + phoneNumber) },
+                modifier = Modifier.fillMaxWidth(),
+                enabled = !uiState.isLoading,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary
+                )
+            ) {
+                Text("Send Code", style = MaterialTheme.typography.bodyLarge
+                    .copy(color = MaterialTheme.colorScheme.onPrimary))
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+
 
             // Поле ввода кода авторизации
             OutlinedTextField(
@@ -64,24 +110,10 @@ fun LoginScreen(
             )
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Кнопка отправки кода
-            Button(
-                onClick = { viewModel.sendAuthCode(phone.value) },
-                modifier = Modifier.fillMaxWidth(),
-                enabled = !uiState.isLoading,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.onPrimary
-                )
-            ) {
-                Text("Send Code", style = MaterialTheme.typography.bodyLarge
-                    .copy(color = MaterialTheme.colorScheme.onPrimary))
-            }
-            Spacer(modifier = Modifier.height(8.dp))
 
             // Кнопка проверки кода
             Button(
-                onClick = { viewModel.checkAuthCode(phone.value, authCode.value) },
+                onClick = { viewModel.checkAuthCode(countryCode + phoneNumber, authCode.value) },
                 modifier = Modifier.fillMaxWidth(),
                 enabled = !uiState.isLoading,
                 colors = ButtonDefaults.buttonColors(
@@ -117,7 +149,7 @@ fun LoginScreen(
                 LaunchedEffect(Unit) {
                     viewModel.saveUser { success, error ->
                         if (success) {
-                            onLoginSuccess(phone.value, uiState.isUserExists!!)
+                            onLoginSuccess(phoneNumber, uiState.isUserExists!!)
                         } else {
                             //TODO
                         }
