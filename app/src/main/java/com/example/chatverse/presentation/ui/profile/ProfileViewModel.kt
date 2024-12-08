@@ -52,12 +52,6 @@ class ProfileViewModel @Inject constructor(
                 zodiacSign.value = calculateZodiacSign(user.birthday ?: "1970-01-01")
                 about.value = user.status ?: ""
             }
-            val remoteUser = repository.loadRemoteUser()
-            Log.d(AppConstants.LOG_TAG, "ProfileViewModel - loadUserProfile remoteUser: $remoteUser")
-           //TODO
-            remoteUser.profileData.avatar.let {
-                avatarUrl.value = it!!
-            }
         }
     }
 

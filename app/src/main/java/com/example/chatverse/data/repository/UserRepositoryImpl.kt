@@ -138,7 +138,8 @@ class UserRepositoryImpl @Inject constructor(
         val loginResult: LoginResult = response.mapFromDto()
 
         Log.d(AppConstants.LOG_TAG, "UserRepositoryImpl checkAuthCode loginResult: $loginResult")
-        tokenManager.saveTokens(response.accessToken, response.refreshToken)
+        if (loginResult.isUserExists)
+            tokenManager.saveTokens(response.accessToken, response.refreshToken)
         return loginResult
     }
 }
