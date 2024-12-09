@@ -16,8 +16,12 @@ import com.example.chatverse.data.local.model.UserProfileEntity
 import com.example.chatverse.data.remote.api.MainApi
 import com.example.chatverse.data.remote.dto.GetCurrentUserProfileDto
 import com.example.chatverse.data.remote.dto.RegisterInDto
+import com.example.chatverse.data.remote.dto.UserUpdateDto
 import com.example.chatverse.di.AuthRetrofit
 import com.example.chatverse.di.MainRetrofit
+import com.google.gson.annotations.SerializedName
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import javax.inject.Singleton
 
 @Singleton
@@ -32,15 +36,77 @@ class UserRepositoryImpl @Inject constructor(
     override suspend fun loadRemoteUser(): GetCurrentUserProfileDto {
         return mainApi.getCurrentUser()
     }
-    override suspend fun loadUserProfile(): UserProfileEntity? {
+
+    override suspend fun updateUserProfile(user: UserUpdateDto) {
+        val updateUserResponseUserUpdateDto = mainApi.updateUser(user)
+        Log.d(AppConstants.LOG_TAG, "UserRepositoryImpl - updateUserProfile updateUserResponseUserUpdateDto: $updateUserResponseUserUpdateDto")
+        val oldUser = userDao.getUserById(1)
+        val newUserForDB = UserProfileEntity(
+            id = oldUser.id,
+            name = user.name,
+            username = user.username,
+            birthday = user.birthday,
+            city = user.city,
+            vk = user.vk,
+            instagram = user.instagram,
+            status = user.status,
+            avatar = oldUser.avatar,
+            phone = oldUser.phone,
+            last = oldUser.last,
+            created = oldUser.created,
+            online = oldUser.online,
+            completedTask = oldUser.completedTask,
+            accessToken = oldUser.accessToken,
+            refreshToken = oldUser.refreshToken
+        )
+        userDao.clearUserProfile()
+        userDao.insertUser(newUserForDB)
+
+
+    }
+
+    override suspend fun loadUserProfileFromDB(): UserProfileEntity {
         return userDao.getUserById(1)
     }
 
-    override suspend fun loadProfile(): UserProfileEntity? {
-        TODO("Not yet implemented")
+
+    override suspend fun saveUserProfileInDB(registerInDto: GetCurrentUserProfileDto, onResult: (Boolean, String?) -> Unit) {
+        try {
+            Log.d(AppConstants.LOG_TAG, "UserRepositoryImpl - saveUserProfileInDB registerInDto: $registerInDto")
+            val user = UserProfileEntity(
+                id = 1,
+                name = registerInDto.profileData.name,
+                username = registerInDto.profileData.username,
+                birthday = registerInDto.profileData.birthday,
+                city = registerInDto.profileData.city,
+                vk = registerInDto.profileData.vk,
+                instagram = registerInDto.profileData.instagram,
+                status = registerInDto.profileData.status,
+                avatar = registerInDto.profileData.avatar,
+                phone = registerInDto.profileData.phone,
+                last = registerInDto.profileData.last,
+                created = registerInDto.profileData.created,
+                online = true,
+                completedTask = 1,
+                accessToken = tokenManager.getAccessToken()!!,
+                refreshToken = tokenManager.getRefreshToken()!!
+            )
+            val resultClearDB = userDao.clearUserProfile()
+            Log.d(AppConstants.LOG_TAG, "UserRepositoryImpl - saveUserProfileInDB resultClearDB: $resultClearDB")
+            val resultInsertDB = userDao.insertUser(user)
+            Log.d(AppConstants.LOG_TAG, "UserRepositoryImpl - saveUserProfileInDB resultInsertDB: $resultInsertDB")
+
+            onResult(true, null)
+
+        } catch (e: Exception) {
+            Log.d(AppConstants.LOG_TAG, "UserRepositoryImpl - saveUserProfileInDB Exception: $e")
+        }
     }
 
-    override suspend fun saveUserProfile(registerInDto: GetCurrentUserProfileDto, onResult: (Boolean, String?) -> Unit) {
+    override suspend fun updateUserProfileInDB(
+        registerInDto: GetCurrentUserProfileDto,
+        onResult: (Boolean, String?) -> Unit
+    ) {
         val user = UserProfileEntity(
             id = 1,
             name = registerInDto.profileData.name,
@@ -59,8 +125,15 @@ class UserRepositoryImpl @Inject constructor(
             accessToken = tokenManager.getAccessToken()!!,
             refreshToken = tokenManager.getRefreshToken()!!
         )
-        userDao.insertUser(user)
+        val resultClearDB = userDao.clearUserProfile()
+        Log.d(AppConstants.LOG_TAG, "UserRepositoryImpl - saveUserProfileInDB resultClearDB: $resultClearDB")
+        val resultInsertDB = userDao.insertUser(user)
+        Log.d(AppConstants.LOG_TAG, "UserRepositoryImpl - saveUserProfileInDB resultInsertDB: $resultInsertDB")
+
+        loadUserProfileFromDB()
+
         onResult(true, null)
+
     }
 
     override suspend fun saveUserProfile(registerInDto: RegisterInDto) {
@@ -73,6 +146,7 @@ class UserRepositoryImpl @Inject constructor(
 
     //TODO переделать когда серверное API будет доделано
     override suspend fun registerUser(registerInDto: RegisterInDto, onResult: (Boolean, String?) -> Unit) {
+        Log.d(AppConstants.LOG_TAG, "UserRepositoryImpl - registerUser - registerInDto: $registerInDto")
             try {
                 val response = authApi.registerUser(registerInDto)
                 tokenManager.saveTokens(response.accessToken, response.refreshToken)

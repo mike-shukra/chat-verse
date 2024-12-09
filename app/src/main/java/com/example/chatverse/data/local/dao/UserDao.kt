@@ -10,11 +10,14 @@ import com.example.chatverse.data.local.model.UserProfileEntity
 @Dao
 interface UserDao {
 
+    @Query("DELETE FROM userprofile")
+    suspend fun clearUserProfile()
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertUser(user: UserProfileEntity)
 
     @Query("SELECT * FROM userprofile WHERE id = :id LIMIT 1")
-    suspend fun getUserById(id: Int): UserProfileEntity?
+    suspend fun getUserById(id: Int): UserProfileEntity
 
     @Query("DELETE FROM userprofile")
     suspend fun clearUsers()

@@ -7,8 +7,11 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.chatverse.data.AppConstants
@@ -19,25 +22,18 @@ import java.util.Locale
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(
-    viewModel: LoginViewModel = hiltViewModel(),
-    onLoginSuccess: (String, Boolean) -> Unit
+    uiState: LoginUiState,
+    onSendAuthCode: () -> Unit,
+    onCheckAuthCode: () -> Unit,
+    onCountrySelected: (String) -> Unit,
+    onPhoneNumberChange: (String) -> Unit,
+    onLoginSuccess: (String, Boolean) -> Unit,
+    onAuthCodeChange: (String) -> Unit,
+    onErrorMessage: (String) -> Unit,
+    snackbarHostState: SnackbarHostState
 ) {
-    val uiState by viewModel.uiState.collectAsState()
-    val authCode = remember { mutableStateOf("") }
-    val snackbarHostState = remember { SnackbarHostState() }
 
-    var phoneNumber by remember { mutableStateOf("") }
-    var countryCode by remember { mutableStateOf("+1") }
-
-    var currentRegion = Locale.getDefault().country
-
-    val countries = listOf(
-        "US" to "+1",
-        "RU" to "+7",
-        "IN" to "+91",
-        "FR" to "+33",
-        "DE" to "+49"
-    )
+    val authCodeFocusRequester = remember { FocusRequester() }
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
@@ -68,16 +64,13 @@ fun LoginScreen(
                 horizontalArrangement = Arrangement.spacedBy(8.dp) // Расстояние между элементами
             ) {
                 CountryPicker(
-                    currentRegion = currentRegion,
-                    onCountrySelected = { newCode ->
-                        countryCode = newCode
-                        currentRegion = countries.find { it.second == newCode }?.first ?: "US"
-                    }
+                    currentRegion = uiState.countries.find { it.second == uiState.countryCode }?.first ?: "US",
+                    onCountrySelected = { onCountrySelected(it) }
                 )
                 PhoneNumberInput(
-                    phoneNumber = phoneNumber,
-                    onPhoneNumberChange = { phoneNumber = it },
-                    countryCode = countryCode,
+                    phoneNumber = uiState.phoneNumber,
+                    onPhoneNumberChange = { onPhoneNumberChange(it) },
+                    countryCode = uiState.countryCode,
                     modifier = Modifier.weight(1f) // Элемент растягивается, занимая оставшееся пространство
                 )
             }
@@ -86,7 +79,7 @@ fun LoginScreen(
 
             // Кнопка отправки кода
             Button(
-                onClick = { viewModel.sendAuthCode(countryCode + phoneNumber) },
+                onClick = { onSendAuthCode() },
                 modifier = Modifier.fillMaxWidth(),
                 enabled = !uiState.isLoading,
                 colors = ButtonDefaults.buttonColors(
@@ -102,18 +95,20 @@ fun LoginScreen(
 
             // Поле ввода кода авторизации
             OutlinedTextField(
-                value = authCode.value,
-                onValueChange = { authCode.value = it },
+                value = uiState.authCode,
+                onValueChange = { onAuthCodeChange(it) },
                 label = { Text("Auth Code", style = MaterialTheme.typography.labelLarge) },
                 keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .focusRequester(authCodeFocusRequester)
             )
             Spacer(modifier = Modifier.height(16.dp))
 
 
             // Кнопка проверки кода
             Button(
-                onClick = { viewModel.checkAuthCode(countryCode + phoneNumber, authCode.value) },
+                onClick = { onCheckAuthCode() },
                 modifier = Modifier.fillMaxWidth(),
                 enabled = !uiState.isLoading,
                 colors = ButtonDefaults.buttonColors(
@@ -141,21 +136,54 @@ fun LoginScreen(
                 )
                 LaunchedEffect(error) {
                     snackbarHostState.showSnackbar(error)
-                    viewModel.resetErrorMessage()
+                    onErrorMessage(error)
                 }
             }
 
             if (uiState.loginSuccess) {
                 LaunchedEffect(Unit) {
-                    viewModel.saveUser { success, error ->
-                        if (success) {
-                            onLoginSuccess(phoneNumber, uiState.isUserExists!!)
-                        } else {
-                            //TODO
-                        }
-                    }
+                    onLoginSuccess(uiState.phoneNumber, uiState.isUserExists!!)
                 }
             }
         }
     }
+
+    LaunchedEffect(Unit) {
+        authCodeFocusRequester.requestFocus()
+    }
 }
+
+@Preview(showBackground = true)
+@Composable
+fun PreviewLoginScreen() {
+    // Заглушка для состояния UI
+    val uiState = LoginUiState(
+        countries = listOf("US" to "+1", "RU" to "+7"),
+        countryCode = "+1",
+        phoneNumber = "1234567890",
+        authCode = "",
+        isLoading = false,
+        errorMessage = null,
+        loginSuccess = false,
+        isUserExists = null
+    )
+
+    // Заглушки для обработчиков
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    LoginScreen(
+        uiState = uiState,
+        onSendAuthCode = { /* Логика отправки кода */ },
+        onCheckAuthCode = { /* Логика проверки кода */ },
+        onCountrySelected = { /* Логика выбора страны */ },
+        onPhoneNumberChange = { /* Логика изменения номера телефона */ },
+        onLoginSuccess = { phoneNumber, isUserExists -> /* Логика успешного логина */ },
+        onAuthCodeChange = { /* Логика изменения кода авторизации */ },
+        onErrorMessage = { /* Логика обработки ошибки */ },
+        snackbarHostState = snackbarHostState
+    )
+
+
+}
+
+

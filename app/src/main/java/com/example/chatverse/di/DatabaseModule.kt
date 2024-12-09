@@ -1,6 +1,7 @@
 package com.example.chatverse.di
 
 import android.content.Context
+import android.util.Log
 import androidx.room.Room
 import com.example.chatverse.data.local.AppDatabase
 import com.example.chatverse.data.local.dao.UserDao
@@ -22,7 +23,9 @@ object DatabaseModule {
             context,
             AppDatabase::class.java,
             "chatverse_database"
-        ).build()
+        ).setQueryCallback({ sqlQuery, bindArgs ->
+            Log.d("RoomQuery", "Query: $sqlQuery SQL Args: $bindArgs")
+        }, { it.run() }).build()
     }
 
     @Provides

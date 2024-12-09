@@ -20,27 +20,29 @@ class LoginViewModel @Inject constructor(
     private val repository: UserRepository
 ) : ViewModel() {
 
-    private val _sendAuthCodeState = MutableStateFlow<Result<Unit>?>(null)
-    val sendAuthCodeState: StateFlow<Result<Unit>?> = _sendAuthCodeState
+//    private val _sendAuthCodeState = MutableStateFlow<Result<Unit>?>(null)
+//    val sendAuthCodeState: StateFlow<Result<Unit>?> = _sendAuthCodeState
 
     private val _uiState = MutableStateFlow(LoginUiState())
-    val uiState: StateFlow<LoginUiState> get() = _uiState
+    val uiState: StateFlow<LoginUiState> = _uiState
 
-    fun sendAuthCode(phone: String) {
-        viewModelScope.launch {
-            _sendAuthCodeState.value = try {
-                sendAuthCodeUseCase(phone)
-            } catch (e: Exception) {
-                Result.failure(e)
-            }
-        }
+    fun onPhoneNumberChange(phoneNumber: String) {
+        _uiState.value = _uiState.value.copy(phoneNumber = phoneNumber)
     }
 
-    fun checkAuthCode(phoneNumber: String, authCode: String) {
+    fun onAuthCodeChange(authCode: String) {
+        _uiState.value = _uiState.value.copy(authCode = authCode)
+    }
+
+    fun onCountrySelected(countryCode: String) {
+        _uiState.value = _uiState.value.copy(countryCode = countryCode)
+    }
+
+    fun checkAuthCode() {
         _uiState.value = _uiState.value.copy(isLoading = true)
-        Log.d(AppConstants.LOG_TAG, "LoginViewModel - checkAuthCode - phoneNumber: $phoneNumber")
+        Log.d(AppConstants.LOG_TAG, "LoginViewModel - checkAuthCode - phoneNumber: ${uiState.value.phoneNumber}")
         viewModelScope.launch {
-            val result = runCatching { checkAuthCodeUseCase(phoneNumber, authCode) }
+            val result = runCatching { checkAuthCodeUseCase(uiState.value.countryCode + uiState.value.phoneNumber, uiState.value.authCode) }
 
             result.onSuccess { loginResult ->
                 _uiState.value = _uiState.value.copy(
@@ -57,14 +59,36 @@ class LoginViewModel @Inject constructor(
         }
     }
 
+    fun sendAuthCode() {
+        _uiState.value = _uiState.value.copy(isLoading = true)
+        viewModelScope.launch {
+            val result = runCatching { sendAuthCodeUseCase(uiState.value.countryCode + uiState.value.phoneNumber) }
+            result.onSuccess { loginResult ->
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                )
+            }.onFailure { exception ->
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    errorMessage = exception.message
+                )
+            }
+
+        }
+    }
+
     fun resetErrorMessage() {
         _uiState.value = _uiState.value.copy(errorMessage = null)
+    }
+
+    fun loginSuccess(isUserExists: Boolean) {
+        _uiState.value = _uiState.value.copy(loginSuccess = true, isUserExists = isUserExists)
     }
 
     fun saveUser(onResult: (Boolean, String?) -> Unit) {
         viewModelScope.launch {
             val remoteUser = repository.loadRemoteUser()
-            repository.saveUserProfile(remoteUser, onResult)
+            repository.saveUserProfileInDB(remoteUser, onResult)
         }
     }
 }
