@@ -23,11 +23,11 @@ ChatVerse – это Android-приложение, созданное для у�
 ---
 
 ## **Скриншоты**  
-![Alt text](images/Screenshot 2024-12-22 131249.png)
-![Alt text](images/Screenshot 2024-12-22 135735.png)
-![Alt text](images/Screenshot 2024-12-22 135814.png)
-![Alt text](images/Screenshot 2024-12-22 135831.png)
-![Alt text](images/Screenshot 2024-12-22 135846.png)
+![Alt text](images/Screenshot131249.png)
+![Alt text](images/Screenshot135735.png)
+![Alt text](images/Screenshot135814.png)
+![Alt text](images/Screenshot135831.png)
+![Alt text](images/Screenshot135846.png)
 
 
 ---
