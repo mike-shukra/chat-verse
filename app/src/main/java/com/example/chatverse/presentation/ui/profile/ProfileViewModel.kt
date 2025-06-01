@@ -8,7 +8,6 @@ import com.example.chatverse.data.AppConstants
 import com.example.chatverse.data.remote.dto.UserUpdateDto
 import com.example.chatverse.domain.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -21,7 +20,6 @@ class ProfileViewModel @Inject constructor(
         private set
     var userName = mutableStateOf("")
         private set
-
     var avatarUrl = mutableStateOf("")
         private set
     var phone = mutableStateOf("")
@@ -35,9 +33,8 @@ class ProfileViewModel @Inject constructor(
     var about = mutableStateOf("")
         private set
 
-    fun updateProfile(name: String, userName: String, phone: String, city: String, birthDate: String, about: String) {
+    fun updateProfile(name: String, phone: String, city: String, birthDate: String, about: String) {
         this.name.value = name
-        this.userName.value = userName
         this.phone.value = phone
         this.city.value = city
         this.birthDate.value = birthDate
@@ -46,7 +43,7 @@ class ProfileViewModel @Inject constructor(
         viewModelScope.launch {
             val user = UserUpdateDto(
                 name = name,
-                username = userName,
+                username = userName.value,
                 birthday = birthDate,
                 city = city,
                 vk = "",
@@ -59,18 +56,17 @@ class ProfileViewModel @Inject constructor(
 
     fun loadUserProfileDB(onResult: (Boolean, String?) -> Unit) {
         viewModelScope.launch {
-        val user = repository.loadUserProfileFromDB()
-                Log.d(AppConstants.LOG_TAG, "ProfileViewModel - loadUserProfile user: $user")
-                name.value = user.username
-                userName.value = user.name
-                avatarUrl.value = user.avatar ?: ""
-                phone.value = user.phone ?: ""
-                city.value = user.city ?: ""
-                birthDate.value = user.birthday ?: "1970-01-01"
-                zodiacSign.value = calculateZodiacSign(user.birthday ?: "1970-01-01")
-                about.value = user.status ?: ""
-                onResult(true, null)
-
+            val user = repository.loadUserProfileFromDB()
+            Log.d(AppConstants.LOG_TAG, "ProfileViewModel - loadUserProfile user: $user")
+            name.value = user.name
+            userName.value = user.username
+            avatarUrl.value = user.avatar ?: ""
+            phone.value = user.phone ?: ""
+            city.value = user.city ?: ""
+            birthDate.value = user.birthday ?: "1970-01-01"
+            zodiacSign.value = calculateZodiacSign(user.birthday ?: "1970-01-01")
+            about.value = user.status ?: ""
+            onResult(true, null)
         }
     }
 

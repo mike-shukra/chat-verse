@@ -14,14 +14,11 @@ import com.example.chatverse.data.TokenManager
 import com.example.chatverse.data.local.dao.UserDao
 import com.example.chatverse.data.local.model.UserProfileEntity
 import com.example.chatverse.data.remote.api.MainApi
-import com.example.chatverse.data.remote.dto.GetCurrentUserProfileDto
 import com.example.chatverse.data.remote.dto.RegisterInDto
+import com.example.chatverse.data.remote.dto.UserProfileDto
 import com.example.chatverse.data.remote.dto.UserUpdateDto
 import com.example.chatverse.di.AuthRetrofit
 import com.example.chatverse.di.MainRetrofit
-import com.google.gson.annotations.SerializedName
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
 import javax.inject.Singleton
 
 @Singleton
@@ -33,7 +30,7 @@ class UserRepositoryImpl @Inject constructor(
 ) : UserRepository {
 
 
-    override suspend fun loadRemoteUser(): GetCurrentUserProfileDto {
+    override suspend fun loadRemoteUser(): UserProfileDto {
         return mainApi.getCurrentUser()
     }
 
@@ -70,22 +67,22 @@ class UserRepositoryImpl @Inject constructor(
     }
 
 
-    override suspend fun saveUserProfileInDB(registerInDto: GetCurrentUserProfileDto, onResult: (Boolean, String?) -> Unit) {
+    override suspend fun saveUserProfileInDB(registerInDto: UserProfileDto, onResult: (Boolean, String?) -> Unit) {
         try {
             Log.d(AppConstants.LOG_TAG, "UserRepositoryImpl - saveUserProfileInDB registerInDto: $registerInDto")
             val user = UserProfileEntity(
                 id = 1,
-                name = registerInDto.profileData.name,
-                username = registerInDto.profileData.username,
-                birthday = registerInDto.profileData.birthday,
-                city = registerInDto.profileData.city,
-                vk = registerInDto.profileData.vk,
-                instagram = registerInDto.profileData.instagram,
-                status = registerInDto.profileData.status,
-                avatar = registerInDto.profileData.avatar,
-                phone = registerInDto.profileData.phone,
-                last = registerInDto.profileData.last,
-                created = registerInDto.profileData.created,
+                name = registerInDto.name!!,
+                username = registerInDto.username,
+                birthday = registerInDto.birthday,
+                city = registerInDto.city,
+                vk = registerInDto.vk,
+                instagram = registerInDto.instagram,
+                status = registerInDto.status,
+                avatar = registerInDto.avatar,
+                phone = registerInDto.phone,
+                last = registerInDto.last,
+                created = registerInDto.created,
                 online = true,
                 completedTask = 1,
                 accessToken = tokenManager.getAccessToken()!!,
@@ -104,22 +101,22 @@ class UserRepositoryImpl @Inject constructor(
     }
 
     override suspend fun updateUserProfileInDB(
-        registerInDto: GetCurrentUserProfileDto,
+        registerInDto: UserProfileDto,
         onResult: (Boolean, String?) -> Unit
     ) {
         val user = UserProfileEntity(
             id = 1,
-            name = registerInDto.profileData.name,
-            username = registerInDto.profileData.username,
-            birthday = registerInDto.profileData.birthday,
-            city = registerInDto.profileData.city,
-            vk = registerInDto.profileData.vk,
-            instagram = registerInDto.profileData.instagram,
-            status = registerInDto.profileData.status,
-            avatar = registerInDto.profileData.avatar,
-            phone = registerInDto.profileData.phone,
-            last = registerInDto.profileData.last,
-            created = registerInDto.profileData.created,
+            name = registerInDto.name!!,
+            username = registerInDto.username,
+            birthday = registerInDto.birthday,
+            city = registerInDto.city,
+            vk = registerInDto.vk,
+            instagram = registerInDto.instagram,
+            status = registerInDto.status,
+            avatar = registerInDto.avatar,
+            phone = registerInDto.phone,
+            last = registerInDto.last,
+            created = registerInDto.created,
             online = true,
             completedTask = 1,
             accessToken = tokenManager.getAccessToken()!!,
@@ -148,7 +145,7 @@ class UserRepositoryImpl @Inject constructor(
     override suspend fun registerUser(registerInDto: RegisterInDto, onResult: (Boolean, String?) -> Unit) {
         Log.d(AppConstants.LOG_TAG, "UserRepositoryImpl - registerUser - registerInDto: $registerInDto")
             try {
-                val response = authApi.registerUser(registerInDto)
+                val response = mainApi.registerUser(registerInDto)
                 tokenManager.saveTokens(response.accessToken, response.refreshToken)
 
                 val user = UserProfileEntity(
@@ -209,11 +206,20 @@ class UserRepositoryImpl @Inject constructor(
         Log.d(AppConstants.LOG_TAG, "UserRepositoryImpl checkAuthCode phoneNumber: $phoneNumber , authCode: $authCode")
         val response: LoginResponseDto = authApi.checkAuthCode(CheckAuthCodeDto(phoneNumber, authCode))
         Log.d(AppConstants.LOG_TAG, "UserRepositoryImpl checkAuthCode response: $response")
-        val loginResult: LoginResult = response.mapFromDto()
 
-        Log.d(AppConstants.LOG_TAG, "UserRepositoryImpl checkAuthCode loginResult: $loginResult")
-        if (loginResult.isUserExists)
+        if (response.accessToken != null && response.refreshToken != null) {
             tokenManager.saveTokens(response.accessToken, response.refreshToken)
+            Log.d(AppConstants.LOG_TAG, "UserRepositoryImpl tokens saved/updated.")
+        } else {
+            Log.w(AppConstants.LOG_TAG, "UserRepositoryImpl checkAuthCode response missing tokens.")
+            //TODO
+            // Здесь можно обработать ситуацию, если токены почему-то null, хотя не должны быть при успехе
+            // Возможно, стоит вернуть ошибку или специфический LoginResult
+        }
+
+        val loginResult: LoginResult = response.mapFromDto()
+        Log.d(AppConstants.LOG_TAG, "UserRepositoryImpl checkAuthCode loginResult: $loginResult")
+
         return loginResult
     }
 }

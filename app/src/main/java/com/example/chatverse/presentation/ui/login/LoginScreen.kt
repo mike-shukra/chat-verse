@@ -13,11 +13,9 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.chatverse.data.AppConstants
 import com.example.chatverse.presentation.ui.components.CountryPicker
 import com.example.chatverse.presentation.ui.components.PhoneNumberInput
-import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -27,7 +25,7 @@ fun LoginScreen(
     onCheckAuthCode: () -> Unit,
     onCountrySelected: (String) -> Unit,
     onPhoneNumberChange: (String) -> Unit,
-    onLoginSuccess: (String, Boolean) -> Unit,
+    onLoginSuccess: () -> Unit,
     onAuthCodeChange: (String) -> Unit,
     onErrorMessage: (String) -> Unit,
     snackbarHostState: SnackbarHostState
@@ -142,7 +140,7 @@ fun LoginScreen(
 
             if (uiState.loginSuccess) {
                 LaunchedEffect(Unit) {
-                    onLoginSuccess(uiState.phoneNumber, uiState.isUserExists!!)
+                    onLoginSuccess()
                 }
             }
         }
@@ -177,7 +175,7 @@ fun PreviewLoginScreen() {
         onCheckAuthCode = { /* Логика проверки кода */ },
         onCountrySelected = { /* Логика выбора страны */ },
         onPhoneNumberChange = { /* Логика изменения номера телефона */ },
-        onLoginSuccess = { phoneNumber, isUserExists -> /* Логика успешного логина */ },
+        onLoginSuccess = { /* Логика успешного логина */ },
         onAuthCodeChange = { /* Логика изменения кода авторизации */ },
         onErrorMessage = { /* Логика обработки ошибки */ },
         snackbarHostState = snackbarHostState

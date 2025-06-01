@@ -26,9 +26,9 @@ fun ProfileAvatar(
         contentDescription = "Avatar",
         modifier = modifier
             .size(150.dp)
-            .clip(CircleShape) // Делает изображение круглым
-            .then(Modifier), // Добавляет дополнительные модификаторы, если нужно
-        contentScale = ContentScale.Crop // Обрезает изображение по краям для полного заполнения контейнера
+            .clip(CircleShape)
+            .then(Modifier),
+        contentScale = ContentScale.Crop
     )
 }
 

@@ -1,8 +1,5 @@
 package com.example.chatverse.domain.usecase
 
-import android.util.Log
-import com.example.chatverse.data.AppConstants
-import com.example.chatverse.data.remote.dto.LoginOutDto
 import com.example.chatverse.domain.model.LoginResult
 import com.example.chatverse.domain.repository.UserRepository
 import javax.inject.Inject

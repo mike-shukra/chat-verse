@@ -8,7 +8,7 @@ fun LoginResponseDto.mapFromDto(): LoginResult {
         refreshToken = this.refreshToken,
         accessToken = this.accessToken,
         userId = this.userId,
-        isUserExists = this.isUserExists
+        isUserExists = this.userExists
     )
 }
 

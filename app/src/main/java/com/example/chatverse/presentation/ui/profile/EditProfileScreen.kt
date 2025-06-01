@@ -17,16 +17,14 @@ import androidx.compose.ui.tooling.preview.Preview
 @Composable
 fun EditProfileScreen(
     name: String,
-    userName: String,
     phone: String,
     city: String,
     birthDate: String,
     about: String,
     onBack: () -> Unit,
-    onSave: (String, String, String, String, String, String) -> Unit
+    onSave: (String, String, String, String, String) -> Unit
 ) {
     var editableUserName by remember { mutableStateOf(name) }
-    var editableUserFullName by remember { mutableStateOf(userName) }
     var editablePhone by remember { mutableStateOf(phone) }
     var editableCity by remember { mutableStateOf(city) }
     var editableBirthDate by remember { mutableStateOf(birthDate) }
@@ -61,14 +59,6 @@ fun EditProfileScreen(
                 value = editableUserName,
                 onValueChange = { editableUserName = it },
                 label = { Text("Name") },
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            // TextField для редактирования имени
-            OutlinedTextField(
-                value = editableUserFullName,
-                onValueChange = { editableUserFullName = it },
-                label = { Text("Full Name") },
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -111,7 +101,7 @@ fun EditProfileScreen(
             // Кнопка для сохранения изменений
             Button(
                 onClick = {
-                    onSave(editableUserName, editableUserFullName, editablePhone, editableCity, editableBirthDate, editableAbout)
+                    onSave(editableUserName, editablePhone, editableCity, editableBirthDate, editableAbout)
                 },
                 modifier = Modifier.fillMaxWidth(),
                 colors = ButtonDefaults.buttonColors(
@@ -130,12 +120,11 @@ fun EditProfileScreen(
 fun EditProfileScreenPreview() {
     EditProfileScreen(
         name = "John Doe",
-        userName = "JohnDoe007",
         phone = "+1 (123) 456-7890",
         city = "New York",
         birthDate = "1990-01-01",
         about = "Software Engineer, loves technology and exploring new places.",
         onBack = { /* No-op */ },
-        onSave = { _, _, _, _, _, _ -> /* No-op */ }
+        onSave = { _, _, _, _, _ -> /* No-op */ }
     )
 }

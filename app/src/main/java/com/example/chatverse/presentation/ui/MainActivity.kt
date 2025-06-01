@@ -8,7 +8,6 @@ import coil.ImageLoader
 import com.example.chatverse.presentation.navigation.AppNavigator
 import com.example.chatverse.presentation.ui.login.LoginViewModel
 import com.example.chatverse.presentation.ui.profile.ProfileViewModel
-import com.example.chatverse.presentation.ui.register.RegisterViewModel
 import com.example.chatverse.presentation.ui.theme.ChatverseTheme
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -24,12 +23,10 @@ class MainActivity : ComponentActivity() {
             ChatverseTheme {
                 val profileViewModel: ProfileViewModel = hiltViewModel()
                 val loginViewModel: LoginViewModel = hiltViewModel()
-                val registerViewModel: RegisterViewModel = hiltViewModel()
                 AppNavigator(
                     imageLoader = imageLoader,
                     profileViewModel = profileViewModel,
                     loginViewModel =  loginViewModel,
-                    registerViewModel = registerViewModel
                 )
             }
         }

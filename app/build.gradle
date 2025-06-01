@@ -1,16 +1,14 @@
 plugins {
-    id 'com.android.application'
-    id 'kotlin-android'
-    id 'kotlin-kapt'
-    id 'dagger.hilt.android.plugin'
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.hilt.android)
+    alias(libs.plugins.ksp)
 }
 
 android {
     namespace = "com.example.chatverse"
     compileSdk = 34
-
-    apply plugin: 'kotlin-kapt'
-
 
     defaultConfig {
         applicationId "com.example.chatverse"
@@ -27,11 +25,11 @@ android {
     kotlinOptions {
         jvmTarget = "17"
     }
+    kotlin {
+        jvmToolchain(17)
+    }
     buildFeatures {
         compose = true
-    }
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.3"
     }
     packaging {
         resources {
@@ -67,7 +65,7 @@ android {
 
         // Hilt
         implementation "com.google.dagger:hilt-android:2.52"
-        kapt "com.google.dagger:hilt-android-compiler:2.52"
+        ksp "com.google.dagger:hilt-android-compiler:2.52"
         implementation "androidx.hilt:hilt-navigation-compose:1.0.0"
 
         // Billing
@@ -90,7 +88,7 @@ android {
 
         // Room
         implementation 'androidx.room:room-runtime:2.6.1'
-        kapt 'androidx.room:room-compiler:2.6.1'
+        ksp 'androidx.room:room-compiler:2.6.1'
         implementation "androidx.room:room-ktx:2.6.1"
         implementation "androidx.room:room-rxjava2:2.6.1"
         testImplementation "androidx.room:room-testing:2.6.1"
@@ -108,13 +106,4 @@ android {
 
     }
 
-}
-
-kapt {
-    correctErrorTypes = true
-}
-
-repositories {
-    google()
-    mavenCentral()
 }

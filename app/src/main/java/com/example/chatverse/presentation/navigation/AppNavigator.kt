@@ -1,5 +1,6 @@
 package com.example.chatverse.presentation.navigation
 
+import android.util.Log
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MailOutline
@@ -24,18 +25,20 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import coil.ImageLoader
+import com.example.chatverse.data.AppConstants
 import com.example.chatverse.presentation.ui.chats.ChatMessagesScreen
 import com.example.chatverse.presentation.ui.chats.ChatsScreen
 import com.example.chatverse.presentation.ui.login.LoginScreen
 import com.example.chatverse.presentation.ui.login.LoginViewModel
+import com.example.chatverse.presentation.ui.profile.EditProfileScreen
 import com.example.chatverse.presentation.ui.profile.ProfileScreen
 import com.example.chatverse.presentation.ui.profile.ProfileViewModel
-import com.example.chatverse.presentation.ui.register.RegisterScreen
-import com.example.chatverse.presentation.ui.register.RegisterViewModel
+import java.net.URLDecoder
+import java.nio.charset.StandardCharsets
 
 sealed class BottomNavItem(val route: String, val label: String, val icon: @Composable () -> Unit) {
-    object Profile : BottomNavItem("profile", "Profile", { Icon(Icons.Default.Person, contentDescription = "Profile") })
-    object Chats : BottomNavItem("chats", "Chats", { Icon(Icons.Default.MailOutline, contentDescription = "Chats") })
+    data object Profile : BottomNavItem("profile", "Profile", { Icon(Icons.Default.Person, contentDescription = "Profile") })
+    data object Chats : BottomNavItem("chats", "Chats", { Icon(Icons.Default.MailOutline, contentDescription = "Chats") })
     // Add more items here when needed
 }
 
@@ -45,7 +48,6 @@ fun AppNavigator(
     imageLoader: ImageLoader,
     profileViewModel: ProfileViewModel,
     loginViewModel: LoginViewModel,
-    registerViewModel: RegisterViewModel
 ) {
     val navController = rememberNavController()
 
@@ -69,47 +71,29 @@ fun AppNavigator(
                     onCheckAuthCode = { loginViewModel.checkAuthCode() },
                     onCountrySelected = { loginViewModel.onCountrySelected(it) },
                     onPhoneNumberChange = { loginViewModel.onPhoneNumberChange(it) },
-                    onLoginSuccess = { phone, isUserExist ->
-                        if (!isUserExist) {
-                            navController.navigate("register/$phone") {
-                                popUpTo("login") { inclusive = true }
-                            }
-                        } else {
-                            loginViewModel.saveUser { success, message ->
-                                if (success) {
-                                    profileViewModel.loadUserProfileDB { successLoad, _ ->
-                                        if (successLoad) {
-                                            navController.navigate("profile") {
-                                                popUpTo("login") { inclusive = true }
-                                            }
+                    onLoginSuccess = {
+                        loginViewModel.saveUser { success, message ->
+                            if (success) {
+                                profileViewModel.loadUserProfileDB { successLoad, _ ->
+                                    if (successLoad) {
+                                        navController.navigate("profile") {
+                                            popUpTo("login") { inclusive = true } // Очищаем стек до экрана логина
                                         }
+                                    } else {
+                                        // Обработка ошибки загрузки профиля (показать Snackbar, например)
+                                        // Возможно, стоит остаться на экране логина или показать ошибку
+                                        Log.d(AppConstants.LOG_TAG, "AppNavigator - onLoginSuccess successLoad: $successLoad")
                                     }
                                 }
+                            } else {
+                                Log.d(AppConstants.LOG_TAG, "AppNavigator - onLoginSuccess success: $success")
+                                // Обработка ошибки сохранения пользователя (показать Snackbar, например)
                             }
                         }
                     },
                     onAuthCodeChange = { loginViewModel.onAuthCodeChange(it) },
                     onErrorMessage = { },
                     snackbarHostState = snackbarHostState
-                )
-            }
-
-            composable(
-                "register/{phone}",
-                arguments = listOf(navArgument("phone") { type = NavType.StringType })
-            ) { backStackEntry ->
-                val phone = backStackEntry.arguments?.getString("phone") ?: ""
-                RegisterScreen(
-                    phone = phone,
-                    onRegistrationSuccess = {
-                        navController.navigate("profile") {
-                            popUpTo("register/{phone}") { inclusive = true }
-                        }
-                    },
-                    registerUser = { registerInDto, callback ->
-                        registerViewModel.registerUser(registerInDto, callback)
-                    },
-                    onBack = { navController.popBackStack() }
                 )
             }
 
@@ -126,24 +110,77 @@ fun AppNavigator(
                     onLogout = { },
                     onEditProfile = {
                         val name = profileViewModel.name.value
-                        val userName = profileViewModel.userName.value
                         val phone = profileViewModel.phone.value
                         val city = profileViewModel.city.value
                         val birthDate = profileViewModel.birthDate.value
                         val about = profileViewModel.about.value
 
                         navController.navigate(
-                            "edit_profile/$name/$userName/$phone/$city/$birthDate/$about"
+                            "edit_profile/$name/$phone/$city/$birthDate/$about"
                         )
                     },
                     imageLoader = imageLoader
                 )
             }
 
-            composable("chats") {
-                ChatsScreen(
-                    onChatClick = { chatId ->
-                        navController.navigate("chat_messages/$chatId")
+            composable(
+                route = "edit_profile/{name}/{phone}/{city}/{birthDate}/{about}",
+                arguments = listOf(
+                    navArgument("name") { type = NavType.StringType; nullable = true },
+                    navArgument("phone") { type = NavType.StringType; nullable = true },
+                    navArgument("city") { type = NavType.StringType; nullable = true },
+                    navArgument("birthDate") { type = NavType.StringType; nullable = true },
+                    navArgument("about") { type = NavType.StringType; nullable = true }
+                )
+            ) { backStackEntry ->
+                // Извлекаем и декодируем аргументы (если вы их кодировали при навигации)
+                val encodedName = backStackEntry.arguments?.getString("name")
+                val name =
+                    encodedName?.let { URLDecoder.decode(it, StandardCharsets.UTF_8.toString()) }
+                        ?: ""
+
+                val encodedPhone = backStackEntry.arguments?.getString("phone")
+                val phone =
+                    encodedPhone?.let { URLDecoder.decode(it, StandardCharsets.UTF_8.toString()) }
+                        ?: ""
+
+                val encodedCity = backStackEntry.arguments?.getString("city")
+                val city =
+                    encodedCity?.let { URLDecoder.decode(it, StandardCharsets.UTF_8.toString()) }
+                        ?: ""
+
+                val encodedBirthDate = backStackEntry.arguments?.getString("birthDate")
+                val birthDate = encodedBirthDate?.let {
+                    URLDecoder.decode(
+                        it,
+                        StandardCharsets.UTF_8.toString()
+                    )
+                } ?: ""
+
+                val encodedAbout = backStackEntry.arguments?.getString("about")
+                val about =
+                    encodedAbout?.let { URLDecoder.decode(it, StandardCharsets.UTF_8.toString()) }
+                        ?: ""
+
+                EditProfileScreen(
+                    name = name,
+                    phone = phone,
+                    city = city,
+                    birthDate = birthDate,
+                    about = about,
+                    onBack = {
+                        navController.popBackStack()
+                    },
+                    onSave = { updatedName, updatedPhone, updatedCity, updatedBirthDate, updatedAbout ->
+                        profileViewModel.updateProfile(
+                            name = updatedName,
+                            phone = updatedPhone,
+                            city = updatedCity,
+                            birthDate = updatedBirthDate,
+                            about = updatedAbout
+                        )
+
+                        navController.popBackStack()
                     }
                 )
             }
