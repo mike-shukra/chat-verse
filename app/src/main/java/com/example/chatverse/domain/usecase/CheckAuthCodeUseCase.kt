@@ -7,7 +7,7 @@ import javax.inject.Inject
 class CheckAuthCodeUseCase @Inject constructor(
     private val userRepository: UserRepository
 ) {
-    suspend operator fun invoke(phoneNumber: String, authCode: String): LoginResult  {
+    suspend operator fun invoke(phoneNumber: String, authCode: String): Result<LoginResult> {
         return userRepository.checkAuthCode(phoneNumber, authCode)
     }
 }

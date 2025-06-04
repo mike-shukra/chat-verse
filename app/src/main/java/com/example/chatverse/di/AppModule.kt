@@ -9,11 +9,13 @@ import com.example.chatverse.data.remote.api.AuthApi
 import com.example.chatverse.data.remote.api.MainApi
 import com.example.chatverse.data.repository.UserRepositoryImpl
 import com.example.chatverse.domain.repository.UserRepository
+import com.example.chatverse.presentation.AuthEvent
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import kotlinx.coroutines.flow.MutableSharedFlow
 import okhttp3.OkHttpClient
 import javax.inject.Singleton
 
@@ -21,6 +23,13 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object AppModule {
 
+    @Provides
+    @Singleton
+    fun provideAuthEventChannel(): MutableSharedFlow<AuthEvent> {
+        // replay = 0, чтобы новые подписчики не получали старые события, если это не нужно
+        // extraBufferCapacity = 1, чтобы tryEmit не терял событие, если подписчика еще нет, но он вот-вот появится
+        return MutableSharedFlow(replay = 0, extraBufferCapacity = 1)
+    }
 
     /*
      * CoilModule

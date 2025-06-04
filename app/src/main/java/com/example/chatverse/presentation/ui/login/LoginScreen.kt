@@ -23,11 +23,13 @@ fun LoginScreen(
     uiState: LoginUiState,
     onSendAuthCode: () -> Unit,
     onCheckAuthCode: () -> Unit,
-    onCountrySelected: (String) -> Unit,
+    onCountrySelected: (String) -> Unit, // Этот String - ISO код страны, например "US"
     onPhoneNumberChange: (String) -> Unit,
-    onLoginSuccess: () -> Unit,
+    // Измененный параметр: этот коллбэк вызывается, когда uiState.loginSuccess == true
+    // Он должен запустить финальные шаги во ViewModel.
+    onAuthCodeVerified: () -> Unit,
     onAuthCodeChange: (String) -> Unit,
-    onErrorMessage: (String) -> Unit,
+    onErrorMessageShown: () -> Unit, // Коллбэк для сброса ошибки после показа Snackbar
     snackbarHostState: SnackbarHostState
 ) {
 
@@ -48,8 +50,8 @@ fun LoginScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues) // Учет paddingValues
-                .padding(16.dp), // Дополнительные отступы
+                .padding(paddingValues)
+                .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Top
         ) {
@@ -57,29 +59,30 @@ fun LoginScreen(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 0.dp), // Отступы от краёв экрана
-                verticalAlignment = Alignment.CenterVertically, // Выравнивание по вертикали
-                horizontalArrangement = Arrangement.spacedBy(8.dp) // Расстояние между элементами
+                    .padding(horizontal = 0.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 CountryPicker(
+                    // Находим ISO код страны (например, "US") по телефонному коду (например, "+1")
+                    // Если uiState.countries это List<Pair<String, String>> где first="US", second="+1"
                     currentRegion = uiState.countries.find { it.second == uiState.countryCode }?.first ?: "US",
-                    onCountrySelected = { onCountrySelected(it) }
+                    onCountrySelected = { countryIsoCode -> onCountrySelected(countryIsoCode) }
                 )
                 PhoneNumberInput(
                     phoneNumber = uiState.phoneNumber,
-                    onPhoneNumberChange = { onPhoneNumberChange(it) },
+                    onPhoneNumberChange = onPhoneNumberChange, // Передаем напрямую
                     countryCode = uiState.countryCode,
-                    modifier = Modifier.weight(1f) // Элемент растягивается, занимая оставшееся пространство
+                    modifier = Modifier.weight(1f)
                 )
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Кнопка отправки кода
             Button(
-                onClick = { onSendAuthCode() },
+                onClick = onSendAuthCode, // Передаем напрямую
                 modifier = Modifier.fillMaxWidth(),
-                enabled = !uiState.isLoading,
+                enabled = !uiState.isLoading && !uiState.finalLoading, // Также блокируем при finalLoading
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.primary,
                     contentColor = MaterialTheme.colorScheme.onPrimary
@@ -90,25 +93,22 @@ fun LoginScreen(
             }
             Spacer(modifier = Modifier.height(16.dp))
 
-
-            // Поле ввода кода авторизации
             OutlinedTextField(
                 value = uiState.authCode,
-                onValueChange = { onAuthCodeChange(it) },
+                onValueChange = onAuthCodeChange, // Передаем напрямую
                 label = { Text("Auth Code", style = MaterialTheme.typography.labelLarge) },
                 keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .focusRequester(authCodeFocusRequester)
+                    .focusRequester(authCodeFocusRequester),
+                enabled = !uiState.isLoading && !uiState.finalLoading // Также блокируем при finalLoading
             )
             Spacer(modifier = Modifier.height(16.dp))
 
-
-            // Кнопка проверки кода
             Button(
-                onClick = { onCheckAuthCode() },
+                onClick = onCheckAuthCode, // Передаем напрямую
                 modifier = Modifier.fillMaxWidth(),
-                enabled = !uiState.isLoading,
+                enabled = !uiState.isLoading && !uiState.finalLoading, // Также блокируем при finalLoading
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.primary,
                     contentColor = MaterialTheme.colorScheme.onPrimary
@@ -118,13 +118,24 @@ fun LoginScreen(
                     .copy(color = MaterialTheme.colorScheme.onPrimary))
             }
 
-            if (uiState.isLoading) {
+            // Общий индикатор загрузки (для send/check code и для finalLoading)
+            if (uiState.isLoading || uiState.finalLoading) {
                 Spacer(modifier = Modifier.height(16.dp))
                 CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
             }
 
             uiState.errorMessage?.let { error ->
                 Log.d(AppConstants.LOG_TAG, "LoginScreen - errorMessage: $error")
+                // Snackbar покажется автоматически, если snackbarHostState используется в Scaffold
+                // Этот LaunchedEffect для показа Snackbar и последующего сброса ошибки во ViewModel
+                LaunchedEffect(error, snackbarHostState) {
+                    snackbarHostState.showSnackbar(
+                        message = error,
+                        duration = SnackbarDuration.Short
+                    )
+                    onErrorMessageShown() // Сообщаем ViewModel, что сообщение показано
+                }
+                // Можно дополнительно отобразить текст ошибки на экране, если нужно
                 Spacer(modifier = Modifier.height(16.dp))
                 Text(
                     text = error,
@@ -132,56 +143,64 @@ fun LoginScreen(
                     style = MaterialTheme.typography.bodyMedium,
                     textAlign = TextAlign.Center
                 )
-                LaunchedEffect(error) {
-                    snackbarHostState.showSnackbar(error)
-                    onErrorMessage(error)
-                }
             }
 
+            // Когда код успешно проверен (loginSuccess = true),
+            // запускаем процесс завершения логина во ViewModel.
             if (uiState.loginSuccess) {
-                LaunchedEffect(Unit) {
-                    onLoginSuccess()
+                // Используем LaunchedEffect, чтобы onAuthCodeVerified вызвался один раз,
+                // когда loginSuccess становится true.
+                // Ключ Unit означает, что это запустится при первой композиции, где loginSuccess == true.
+                // Если loginSuccess может стать false, а потом снова true, и нужно реагировать каждый раз,
+                // то ключом может быть сам loginSuccess (или более сложный ключ, если нужно).
+                // Но обычно loginSuccess устанавливается один раз для успешного входа.
+                LaunchedEffect(key1 = uiState.loginSuccess) {
+                    // Проверяем еще раз, чтобы избежать вызова, если состояние быстро изменилось
+                    if (uiState.loginSuccess) {
+                        onAuthCodeVerified()
+                    }
                 }
             }
         }
     }
 
-    LaunchedEffect(Unit) {
-        authCodeFocusRequester.requestFocus()
+    // Фокус на поле ввода кода при первом запуске экрана, если код еще не отправлен/проверен
+    LaunchedEffect(uiState.authCodeSent) {
+        if (uiState.authCodeSent && uiState.authCode.isEmpty()) { // Если код отправлен, но поле еще пустое
+            authCodeFocusRequester.requestFocus()
+        }
     }
 }
+
 
 @Preview(showBackground = true)
 @Composable
 fun PreviewLoginScreen() {
-    // Заглушка для состояния UI
     val uiState = LoginUiState(
         countries = listOf("US" to "+1", "RU" to "+7"),
         countryCode = "+1",
         phoneNumber = "1234567890",
-        authCode = "",
+        authCode = "1234",
         isLoading = false,
-        errorMessage = null,
-        loginSuccess = false,
-        isUserExists = null
+        errorMessage = null, // "Sample error message for preview",
+        loginSuccess = false, // true для теста LaunchedEffect
+        isUserExists = null,
+        authCodeSent = true,
+        finalLoading = false
     )
-
-    // Заглушки для обработчиков
     val snackbarHostState = remember { SnackbarHostState() }
 
-    LoginScreen(
-        uiState = uiState,
-        onSendAuthCode = { /* Логика отправки кода */ },
-        onCheckAuthCode = { /* Логика проверки кода */ },
-        onCountrySelected = { /* Логика выбора страны */ },
-        onPhoneNumberChange = { /* Логика изменения номера телефона */ },
-        onLoginSuccess = { /* Логика успешного логина */ },
-        onAuthCodeChange = { /* Логика изменения кода авторизации */ },
-        onErrorMessage = { /* Логика обработки ошибки */ },
-        snackbarHostState = snackbarHostState
-    )
-
-
+    MaterialTheme { // Обертка в MaterialTheme для Preview
+        LoginScreen(
+            uiState = uiState,
+            onSendAuthCode = { Log.d("Preview", "Send Auth Code") },
+            onCheckAuthCode = { Log.d("Preview", "Check Auth Code") },
+            onCountrySelected = { Log.d("Preview", "Country Selected: $it") },
+            onPhoneNumberChange = { Log.d("Preview", "Phone Changed: $it") },
+            onAuthCodeVerified = { Log.d("Preview", "Auth Code Verified, proceeding...") },
+            onAuthCodeChange = { Log.d("Preview", "Auth Code Changed: $it") },
+            onErrorMessageShown = { Log.d("Preview", "Error message shown, reset.") },
+            snackbarHostState = snackbarHostState
+        )
+    }
 }
-
-

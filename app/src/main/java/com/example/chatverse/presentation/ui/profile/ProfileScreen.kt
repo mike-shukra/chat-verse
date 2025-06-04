@@ -130,7 +130,6 @@ fun ProfileScreen(
             // Logout Button
             Button(
                 onClick = {
-//                    viewModel.logout()
                     onLogout()
                 },
                 modifier = Modifier
