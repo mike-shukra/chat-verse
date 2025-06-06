@@ -9,10 +9,13 @@ import retrofit2.http.PUT
 interface MainApi {
 
 
-    @GET("/api/v1/users/me/")
-    suspend fun getCurrentUser(): GetCurrentUserProfileDto
+    @GET("/api/v1/users/me")
+    suspend fun getCurrentUser(): UserProfileDto
 
-    @PUT("/api/v1/users/me/")
+    @PUT("/api/v1/users/me")
     suspend fun updateUser(@Body userUpdateDto: UserUpdateDto): UserUpdateDto
+
+    @POST("/api/v1/users/register")
+    suspend fun registerUser(@Body registerIn: RegisterInDto): TokenDto
 
 }

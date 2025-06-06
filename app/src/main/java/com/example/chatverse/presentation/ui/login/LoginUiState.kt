@@ -14,5 +14,8 @@ data class LoginUiState(
         "IN" to "+91",
         "FR" to "+33",
         "DE" to "+49"
-    )
+
+    ),
+    val authCodeSent: Boolean = false,
+    val finalLoading: Boolean = false, // Для индикатора загрузки/сохранения профиля
 )

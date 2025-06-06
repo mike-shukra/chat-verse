@@ -1,7 +1,9 @@
 package com.example.chatverse.data.remote.dto
 
+import com.google.gson.annotations.SerializedName
+
 data class AvatarsDto(
-    val bigAvatar: String,
-    val miniAvatar: String,
-    val avatar: String?
+    @SerializedName("avatar") val avatar: String?,
+    @SerializedName("bigAvatar") val bigAvatar: String?,
+    @SerializedName("miniAvatar") val miniAvatar: String?
 )
